@@ -115,6 +115,10 @@ class genTree {
         //デフォルトインデント
         this._indent = 15;
 
+        //デフォルトspacling
+        this._leftPadding = 10;
+
+
         //ユニークなID
         this._uid = this._getUniqueStr();
 
@@ -140,8 +144,12 @@ class genTree {
         this.setData(this._json);
     }
 
-    set closeIcon(element){
+    setOpenIcon(element,position ={}){
+        this._iconOpen = this._createOpenIcon(element,position);
+    }
 
+    setCloseIcon(element,position ={}){
+        this._iconClose = this._createCloseIcon(element,position);
     }
 
     /**
@@ -286,7 +294,7 @@ class genTree {
         //インデント
         const indent = document.createElement('div');
         indent.style.position = 'absolute';
-        indent.style.left = this._indent * (data.level +1) +"px";
+        indent.style.left = this._leftPadding +　this._indent * (data.level +1) +"px";
         indent.style.top = "0px";
         newDiv.appendChild(indent);
 
@@ -311,7 +319,7 @@ class genTree {
 
     }
 
-    _createIcon(type, element = null, position = []){
+    _createIcon(type, element = null, position = {}){
         const div = document.createElement('div');
         div.style.position = "absolute";
         div.style.left = "-15px";
@@ -354,7 +362,7 @@ class genTree {
      * @param {{left:string,top:string}} position アイコン（画像）の位置
      * @returns 
      */
-     _createOpenIcon(element = null, position=[]){
+     _createOpenIcon(element = null, position={}){
 
         return this._createIcon('open',element,position);
     }
@@ -365,7 +373,7 @@ class genTree {
      * @param {{left:string,top:string}} position アイコン（画像）の位置
      * @returns 
      */
-     _createCloseIcon(element = null, position=[]){
+     _createCloseIcon(element = null, position={}){
 
         return this._createIcon('close',element,position);
     }

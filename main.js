@@ -105,3 +105,32 @@ document.getElementById('button_fontSize').addEventListener('click', function(e)
 
 });
 
+let iconTogle = true;
+document.getElementById('button_iconChange').addEventListener('click', function(e){
+
+    const svgClose = document.createElement('img');
+    const svgOpen = document.createElement('img');
+    if(iconTogle){
+        svgOpen.src = 'test/open_folder.svg';
+        svgClose.src = 'test/close_folder.svg';
+    }else{
+        svgOpen.src = 'img/down.svg';
+        svgClose.src = 'img/right.svg';
+    }
+
+    svgClose.width = "10";
+    svgClose.height = "10";
+
+    svgOpen.width = "10";
+    svgOpen.height = "10";
+
+    treeRend.setCloseIcon(svgClose,{left:'-15px',top:'7px'});
+    treeRend.setOpenIcon(svgOpen,{left:'-15px',top:'7px'});
+
+    treeRend.update();
+
+
+    iconTogle = !iconTogle;
+
+});
+
