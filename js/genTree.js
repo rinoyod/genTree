@@ -75,11 +75,8 @@ class genTree {
 
 
         }.bind(this));
-
-
-       
         
-        
+        //マウスオーバーイベント
         this._layer.addEventListener('mousemove', function(e){
             e.stopPropagation();
             e.preventDefault();
@@ -143,6 +140,21 @@ class genTree {
         this.setData(this._json);
     }
 
+    set closeIcon(element){
+
+    }
+
+    /**
+     * 表示を更新する
+     */
+    update(){
+        this._tmpArrayData = []
+        this._toArrayData(this._json);
+        this._arrayData = this._tmpArrayData;
+        this._render();
+        this._layerReSzie();
+    }
+
     _resetActualHeight(){
         const tesSpan = document.createElement('span');
         tesSpan.textContent = 'あ';
@@ -186,19 +198,7 @@ class genTree {
         }
     }
 
-    setData(json){
-        this._json = json;
-        this._tmpArrayData = []
-        this._toArrayData(this._json);
 
-        this._arrayData = this._tmpArrayData;
-
-        //画面へ表示
-        this._render();
-
-        //レイヤーのリサイズ
-        this._layerReSzie();
-    }
 
     _getRowHeight(){
         return (this._actualHeigth + (this._defaultFontMargen*2));
@@ -376,12 +376,6 @@ class genTree {
         //子要素を全て消す
         while (this._layer.firstChild) this._layer.removeChild(this._layer.firstChild);
 
-        // const len = this._arrayData.length;
-
-        // for (let i = 0; i < len; i=(i+1)|0) {
-        //     this._layer.appendChild(this._createRowDiv(i));
-        // }
-
         this._scrollRender();
     }
 
@@ -451,13 +445,6 @@ class genTree {
         return new Date().getTime().toString(16)  + Math.floor(strong*Math.random()).toString(16);
     }
 
-    /******************************************************************************
-     * JavaScriptで文字列の矩形領域を取得する
-     * elem 対象のエレメントまたはノード
-     * 
-     * 
-    ******************************************************************************/
-
     /**
      * JavaScriptで文字列の矩形領域を１文字ずつ取得する
      * @param {Element} elem Element
@@ -523,33 +510,26 @@ class genTree {
 
         this._beforeMouseMoveIdx = index;
     }
-
-
-    _createThinOutFunc(callback, interval = 32) {
-        var time = Date.now(),
-            lag,
-            debounceTimer,
-            debounceDelay = 16;
-        var callbackMethod = callback;
-      
-        return function(params) {
-          lag = time + interval - Date.now();
-          if (lag < 0) {
-            console.log( time + "：throttle：" + lag);
-            callbackMethod(params);
-            time = Date.now();
-          } else {
-            // clearTimeout(debounceTimer);
-            // debounceTimer = setTimeout(function() {
-               console.log( time + "：debounce：" + (interval - lag + debounceDelay));
-            //   //callbackMethod(params);
-            // }, (interval - lag + debounceDelay));
-          }
-        }
+   
+    setData(json){
+        this._json = json;
+        this.update();
     }
     
-    
-    eClick(method){
-        this._eClickMethod = method;
+    /**
+     * ある行リックされた時、処理が実行前に呼ばれます
+     * falseを返すと後続の処理を行いません
+     * @param {object} callback 処理
+     */
+    eClick(callback){
+        this._eClickMethod = callback;
+    }
+
+    /**
+     * ある行リックされた時、処理が実行後に呼ばれます
+     * @param {object} callback 処理
+     */
+    eClicked(callback){
+        this._eClickedMethod = callback;
     }
 }
