@@ -1,0 +1,7 @@
+#divTree .hover {
+  background-color: aqua;
+}
+
+#divTree .selected {
+  font-weight: bold;
+}

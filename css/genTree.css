@@ -1,0 +1,31 @@
+.genTree {
+  position: relative;
+  margin:0 0 0 0px;
+  padding: 0 0 0 0px;
+}
+
+.genTree.pl{
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.genTree .row {
+  position: absolute;
+}
+.genTree {
+    background: white;
+    color: #212529;
+  }
+
+/* スクロールバー設定　なぜかこれを設定しないと色も反映されない*/
+.genTree::-webkit-scrollbar { /* スクロールバー全体 */
+		width: 12px; 
+		height:12px;
+	}
+
+.genTree::-webkit-scrollbar-thumb{ /* スクロールバーのある部分 */
+		background: #a89e9e;
+}
+.genTree::-webkit-scrollbar-track{background:#e0d8d8;}
+.genTree::-webkit-scrollbar-corner{background:rgba(184, 182, 182, 0);}
