@@ -1,11 +1,16 @@
 class genTree {
 
+    static classPath = "";
+    static path(path){
+        genTree.classPath = path;
+    }
+
     //イベントメソッド
     _eClickMethod = function(e,p){return true};  //クリック（処理前）
     _eClickedMethod = function(e,p){return true};//クリック（処理後）
     
 
-    constructor(divElement,option =[]){
+    constructor(divElement,option ={}){
 
         this._parentDivElement = divElement;
         this._parentDivElement.classList.add('genTree');
@@ -38,6 +43,10 @@ class genTree {
             const height = this._getRowHeight();
             const index = Math.floor(pos.y/height);
             console.log('topLayer click row[' + index + ']');
+
+            if(this._arrayData.length -1 < index){
+                return;
+            }
 
             //ユーザー側のクリックイベントの実行
             const after = this._eClickMethod(e.currentTarget, this._arrayData[index]);
@@ -104,6 +113,9 @@ class genTree {
 
         //デフォルトフォントサイズ
         this._defaultFontSize = 16;
+        if('fontSize' in option){
+            this._defaultFontSize = option.fontSize;
+        }
 
         //デフォルトフォントマージン（縦）
         this._defaultFontMargen = 2;
@@ -140,8 +152,10 @@ class genTree {
     //プロパティ
     set fontSize(val){
         this._defaultFontSize = val|0;
-        this._actualHeigth = this._resetActualHeight();
-        this.setData(this._json);
+        if(this._json){
+            this._actualHeigth = this._resetActualHeight();
+            this.setData(this._json);
+        }
     }
 
     setOpenIcon(element,position ={}){
@@ -242,7 +256,10 @@ class genTree {
      */
     _toArrayData(json, level =0){
 
+        if(!json) return;
+        
         //一番上は配列とする
+        
 
         const len = json.length|0;
         for(let i=0; i<len|0; i=(i+1)|0){
@@ -276,6 +293,7 @@ class genTree {
         newDiv.style.height = height + 'px';
         newDiv.style.width = '100%';
         newDiv.style.top   = (rowId * height) + 'px';
+        newDiv.style.whiteSpace = 'nowrap';
         newDiv.id = this._uid + '_' + rowId;
         newDiv.classList.add('row');
 
@@ -329,29 +347,36 @@ class genTree {
 
         if(element == null){
             const svg = document.createElement('img');
+            
+            const use = document.createElement('use');
             if(type === 'open'){
-                svg.src = 'img/down.svg';
+                svg.src = genTree.classPath + '/img/down.svg';
+                //svg.innerHTML = '<use xlink:href="/'+ genTree.classPath + '/img/down.svg' +'"/>'
+                svg.classList.add('openIcon');
             }else{
-                svg.src = 'img/right.svg';
+                svg.src = genTree.classPath + '/img/right.svg';
+                //svg.innerHTML = '<use xlink:href="/'+ genTree.classPath + '/img/right.svg' +'"/>'
+                svg.classList.add('closeIcon');
             }
             svg.width = "10";
             svg.height = "10";
+            //svg.append(use);
             
             icon.appendChild(svg);
             div.appendChild(icon);
         }else{
-
-            if('left' in position){
-                div.style.left = position.left;
-            }
-
-            if('top' in position){
-                div.style.top = position.top;
-            }
-
             icon.appendChild(element);
             div.appendChild(icon);
         }
+
+        if('left' in position){
+            div.style.left = position.left;
+        }
+
+        if('top' in position){
+            div.style.top = position.top;
+        }
+
 
         return div;
     }

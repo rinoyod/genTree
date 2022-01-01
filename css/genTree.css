@@ -1,17 +1,16 @@
 .genTree {
-  position: relative;
   margin:0 0 0 0px;
   padding: 0 0 0 0px;
 }
 
 .genTree.pl{
-  position: relative;
   overflow-y: auto;
   overflow-x: hidden;
 }
 
 .genTree .row {
   position: absolute;
+  cursor: pointer;
 }
 .genTree {
     background: white;

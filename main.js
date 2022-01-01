@@ -1,6 +1,7 @@
 ﻿
 
 //treeRenderTest
+genTree.path('');
 var treeRend = new genTree(document.getElementById('divTree'));
 var testNode = [
     {
