@@ -83,7 +83,7 @@ tree.update(); //再描画
 
  | プロパティ |型  | 説明 |
 | --- | --- | --- |
-| id? | int|string |ユニークなID  |
+| id? | int or string |ユニークなID  |
 | name | string |ツリーに表示される名前  |
 | type | string |'root' or 'node' rootはサブツリーがある場合、ない場合はnodeを指定  |
 | child | [] |typeが'root'の場合、ここにサブツリー用のobjectを配列に追加する  |
