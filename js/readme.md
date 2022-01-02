@@ -75,13 +75,13 @@ tree.update(); //再描画
 <br>
 
 ## setJson(json: [object]):void
-ツリー表示に必要なデータをセットしまう
+ツリー表示に必要なデータをセットする
 
 #### 引数
 * json: [object]
 配列の形でjson形式で設定します
 
- | プロパティ |型  |  |
+ | プロパティ |型  | 説明 |
 | --- | --- | --- |
 | id? | int|string |ユニークなID  |
 | name | string |ツリーに表示される名前  |
