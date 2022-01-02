@@ -41,7 +41,7 @@ imageなどのエレメント
 ```javascript
 //例
 const tree = genTree(divElement);
-cons icon = document.createElement('img');
+const icon = document.createElement('img');
 icon.src ='xxx.png';
 tree.setOpenIcon(icon, {top:1, left:-5});
 tree.update(); //再描画
@@ -64,7 +64,7 @@ imageなどのエレメント
 ```javascript
 //例
 const tree = genTree(divElement);
-cons icon = document.createElement('img');
+const icon = document.createElement('img');
 icon.src ='xxx.png';
 tree.setCloseIcon(icon, {top:1, left:-5});
 tree.update(); //再描画
