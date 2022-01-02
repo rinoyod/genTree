@@ -40,7 +40,7 @@ imageなどのエレメント
    * left:int 左
 ```javascript
 //例
-const tree = genTree(divElement);
+const tree = new genTree(divElement);
 const icon = document.createElement('img');
 icon.src ='xxx.png';
 tree.setOpenIcon(icon, {top:1, left:-5});
@@ -63,7 +63,7 @@ imageなどのエレメント
    * left:int 左
 ```javascript
 //例
-const tree = genTree(divElement);
+const tree = new genTree(divElement);
 const icon = document.createElement('img');
 icon.src ='xxx.png';
 tree.setCloseIcon(icon, {top:1, left:-5});
