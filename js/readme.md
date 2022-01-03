@@ -9,7 +9,7 @@ document.getElementByidなどで取得したdivエレメント
 * option:object
 プロパティ
     * font:int フォントサイズ
-    * 
+   
 
 ---
 <br>
@@ -23,28 +23,6 @@ document.getElementByidなどで取得したdivエレメント
 ```javascript
 //例
 genTree.path('/vender/genTree');
-```
-<br>
-<br>
-
-## setOpenIcon(el:element, position?:object):void
-ツー表示の親の展開時の先頭に出力するアイコンを指定します
-
-#### 引数
-* el:element<br>
-imageなどのエレメント
-
-* posision?:object<br>
-アイコンの位置の微調整に使うプロパティ
-   * top:int 上位置
-   * left:int 左
-```javascript
-//例
-const tree = new genTree(divElement);
-const icon = document.createElement('img');
-icon.src ='xxx.png';
-tree.setOpenIcon(icon, {top:1, left:-5});
-tree.update(); //再描画
 ```
 
 <br>
@@ -69,12 +47,10 @@ icon.src ='xxx.png';
 tree.setCloseIcon(icon, {top:1, left:-5});
 tree.update(); //再描画
 ```
-
-
 <br>
 <br>
 
-## setJson(json: [object]):void
+## setData(json: [object]):void
 ツリー表示に必要なデータをセットする
 
 #### 引数
@@ -130,6 +106,65 @@ const data =[
     }
 ];
 
-tree.setJson(data);
+tree.setData(data);
 
 ```
+
+<br>
+<br>
+
+
+## setOpenIcon(el:element, position?:object):void
+ツー表示の親の展開時の先頭に出力するアイコンを指定します
+
+#### 引数
+* el:element<br>
+imageなどのエレメント
+
+* posision?:object<br>
+アイコンの位置の微調整に使うプロパティ
+   * top:int 上位置
+   * left:int 左
+```javascript
+//例
+const tree = new genTree(divElement);
+const icon = document.createElement('img');
+icon.src ='xxx.png';
+tree.setOpenIcon(icon, {top:1, left:-5});
+tree.update(); //再描画
+```
+
+<br>
+<br>
+
+## update():void
+表示を更新します
+
+<br>
+<br>
+
+# イベント
+## eClick(callback(e,p)):bool?
+行がクリックされた時、処理実行前に呼ばれます
+
+#### 引数
+* callback コールバック関数
+   * e クリックイベント
+   * p 該当するobjectデータ
+
+#### 戻り値
+falseにすると継続する処理を中断できます。
+
+<br>
+<br>
+
+## eClicked(callback(e,p)):void
+行がクリックされた時、処理実行後に呼ばれます
+
+#### 引数
+* callback コールバック関数
+   * e クリックイベント
+   * p 該当するobjectデータ
+
+
+
