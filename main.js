@@ -3,6 +3,7 @@
 //treeRenderTest
 genTree.path('');
 var treeRend = new genTree(document.getElementById('divTree'));
+treeRend.fontSize = 16;
 var testNode = [
     {
         id:1,
@@ -18,7 +19,7 @@ var testNode = [
             {
                 id:2,
                 type:'node',
-                name:'子供２'
+                name:'子供２あいうえおかきくけこたちつてと'
             },
             {
                 id:4,

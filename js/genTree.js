@@ -255,7 +255,7 @@ class genTree {
         }
 
         //値をセット
-        this._layer.style.width = width + 'px';
+       // this._layer.style.width = width + 'px';
         this._layer.style.height = height + 'px';
     }
 
@@ -329,6 +329,7 @@ class genTree {
 
         const textNode = document.createElement('span');
         textNode.style.fontSize = this._defaultFontSize + "px";
+        textNode.style.lineHeight = height + 'px';
         textNode.textContent = data.name;
         indent.appendChild(textNode);
 
@@ -476,9 +477,27 @@ class genTree {
 				const newDiv = this._createRowDiv(i)
 				df.appendChild(newDiv);
 
-			}
+			} 
 		}
         this._layer.appendChild(df);
+
+
+        
+    }
+
+    /**
+     * 該当のRowを最大幅まで合わせる
+     * @param {Element} element
+    */
+    _setSelectedRowWidth(element){
+        const scrollWidth = this._parentDivElement.scrollWidth;
+        const widith =  this._parentDivElement.style.width.replace('px','')|0;
+
+        if(widith < scrollWidth){
+            element.style.width = scrollWidth + "px";
+        }else {
+            element.style.width = '100%';
+        }
     }
 
     _getUniqueStr(myStrong){
@@ -533,7 +552,7 @@ class genTree {
     }
 
     //前回セットした位置を覚えせてまた同じ位置だったら無駄な処理をさせない様にする
-    _beforeMouseMoveIdx = -1
+    _beforeMouseMoveIdx = -1;
     //マウスが移動したときにその行に'hover'を追加する　
     _classAddHover(index){
 
@@ -542,11 +561,13 @@ class genTree {
             for (let i = 0; i < beforeDiv.length; i++) {
                 const element = beforeDiv[i];
                 element.classList.remove('hover');
+                element.style.width = '100%';
             }
 
             const moveDiv = document.getElementById(this._uid + "_" + index);
             if(moveDiv){
                 moveDiv.classList.add('hover');
+                this._setSelectedRowWidth(moveDiv);
             }
         }
 
