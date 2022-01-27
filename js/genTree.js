@@ -32,6 +32,8 @@ class genTree {
 
         this._layer = layer;
 
+        this._selectedObj = null;
+
         //クリックイベント
         this._layer.addEventListener('click', function(e){
             e.stopPropagation();
@@ -51,6 +53,12 @@ class genTree {
             //ユーザー側のクリックイベントの実行
             const after = this._eClickMethod(e.currentTarget, this._arrayData[index]);
 
+
+            //selectedの処理
+            if(this._selectedObj != null){
+                this._selectedObj['selected'] = false;
+            }
+
             for (let i = 0; i < this._layer.childElementCount; i=(i+1)|0) {
                 const idx = this._layer.children[i].id.split('_')[1]|0;
                 if('selected' in this._arrayData[idx]){
@@ -64,6 +72,7 @@ class genTree {
             }
 
             this._arrayData[index]['selected'] = true;
+            this._selectedObj = this._arrayData[index];
             const selectedEl = document.getElementById(this._uid + "_" + index);
             if(selectedEl){
                 selectedEl.classList.add('selected');
