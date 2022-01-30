@@ -6,6 +6,7 @@
 .genTree.pl{
   overflow-y: auto;
   overflow-x: auto;
+  position: relative;
 }
 
 .genTree .row {
