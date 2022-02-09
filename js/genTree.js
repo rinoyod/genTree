@@ -10,9 +10,9 @@ class genTree {
     _eClickedMethod = function(e,p){return true};//クリック（処理後）
     
 
-    constructor(divElement,option ={}){
+    constructor(id, option ={}){
 
-        this._parentDivElement = divElement;
+        this._parentDivElement = document.getElementById(id);
         this._parentDivElement.classList.add('genTree');
         this._parentDivElement.classList.add('pl');
 
@@ -145,10 +145,13 @@ class genTree {
 
         
         //デフォルトアイコン（open)
-        this._iconOpen = this._createOpenIcon();
+        const iconOpenRules = this._getRuleBySelector('.genTree .icon-open');
+        iconOpenRules.style.backgroundImage = 'url(' +genTree.classPath + '/img/down.svg)';
+
 
         //デフォルトアイコン（close)
-        this._iconClose = this._createCloseIcon();
+        const iconCloseRules = this._getRuleBySelector('.genTree .icon-close');
+        iconCloseRules.style.backgroundImage = 'url(' +genTree.classPath + '/img/right.svg)';
 
 
         //配列データ
@@ -165,14 +168,6 @@ class genTree {
             this._actualHeigth = this._resetActualHeight();
             this.setData(this._json);
         }
-    }
-
-    setOpenIcon(element,position ={}){
-        this._iconOpen = this._createOpenIcon(element,position);
-    }
-
-    setCloseIcon(element,position ={}){
-        this._iconClose = this._createCloseIcon(element,position);
     }
 
     /**
@@ -300,9 +295,7 @@ class genTree {
 
         const newDiv = document.createElement('div');
         newDiv.style.height = height + 'px';
-        newDiv.style.width = '100%';
         newDiv.style.top   = (rowId * height) + 'px';
-        newDiv.style.whiteSpace = 'nowrap';
         newDiv.id = this._uid + '_' + rowId;
         newDiv.classList.add('row');
 
@@ -320,25 +313,28 @@ class genTree {
 
         //インデント
         const indent = document.createElement('div');
-        indent.style.position = 'absolute';
-        indent.style.left = this._leftPadding +　this._indent * (data.level +1) +"px";
-        indent.style.top = "0px";
+        indent.classList.add('indent');
+        indent.style.width = this._leftPadding + this._indent * (data.level +1) +"px";
         newDiv.appendChild(indent);
 
+        const rowContent = document.createElement('div');
+        rowContent.classList.add('row-content');
+        newDiv.appendChild(rowContent);
 
 
         const textNode = document.createElement('span');
+        textNode.classList.add('rowtext');
         textNode.style.fontSize = this._defaultFontSize + "px";
         textNode.style.lineHeight = height + 'px';
         textNode.textContent = data.name;
-        indent.appendChild(textNode);
+        rowContent.appendChild(textNode);
 
         //アイコン
         if(data.type === 'root'){
             if(('open' in data) && data.open){
-                indent.appendChild(this._iconOpen.cloneNode(true));
+                indent.classList.add('icon-open');
             }else{
-                indent.appendChild(this._iconClose.cloneNode(true));
+                indent.classList.add('icon-close');
             }
 
         }
@@ -346,73 +342,6 @@ class genTree {
         return newDiv;
 
     }
-
-    _createIcon(type, element = null, position = {}){
-        const div = document.createElement('div');
-        div.style.position = "absolute";
-        div.style.left = "-15px";
-        div.style.top = "7px";
-
-        const icon = document.createElement("i");
-
-        if(element == null){
-            const svg = document.createElement('img');
-            
-            const use = document.createElement('use');
-            if(type === 'open'){
-                svg.src = genTree.classPath + '/img/down.svg';
-                //svg.innerHTML = '<use xlink:href="/'+ genTree.classPath + '/img/down.svg' +'"/>'
-                svg.classList.add('openIcon');
-            }else{
-                svg.src = genTree.classPath + '/img/right.svg';
-                //svg.innerHTML = '<use xlink:href="/'+ genTree.classPath + '/img/right.svg' +'"/>'
-                svg.classList.add('closeIcon');
-            }
-            svg.width = "10";
-            svg.height = "10";
-            //svg.append(use);
-            
-            icon.appendChild(svg);
-            div.appendChild(icon);
-        }else{
-            icon.appendChild(element);
-            div.appendChild(icon);
-        }
-
-        if('left' in position){
-            div.style.left = position.left;
-        }
-
-        if('top' in position){
-            div.style.top = position.top;
-        }
-
-
-        return div;
-    }
-
-    /**
-     * 展開時のアイコンを作成
-     * @param {HTMLElement} element アイコン（画像）のエレメント
-     * @param {{left:string,top:string}} position アイコン（画像）の位置
-     * @returns 
-     */
-     _createOpenIcon(element = null, position={}){
-
-        return this._createIcon('open',element,position);
-    }
-
-    /**
-     * 収束時のアイコンを作成
-     * @param {HTMLElement} element アイコン（画像）のエレメント
-     * @param {{left:string,top:string}} position アイコン（画像）の位置
-     * @returns 
-     */
-     _createCloseIcon(element = null, position={}){
-
-        return this._createIcon('close',element,position);
-    }
-
 
     _render(){
 
@@ -485,21 +414,6 @@ class genTree {
         
     }
 
-    /**
-     * 該当のRowを最大幅まで合わせる
-     * @param {Element} element
-    */
-    _setSelectedRowWidth(element){
-        const scrollWidth = this._parentDivElement.scrollWidth;
-        const widith =  this._parentDivElement.style.width.replace('px','')|0;
-
-        if(widith < scrollWidth){
-            element.style.width = scrollWidth + "px";
-        }else {
-            element.style.width = '100%';
-        }
-    }
-
     _getUniqueStr(myStrong){
         let strong = 1000;
         if (myStrong) strong = myStrong;
@@ -561,19 +475,41 @@ class genTree {
             for (let i = 0; i < beforeDiv.length; i++) {
                 const element = beforeDiv[i];
                 element.classList.remove('hover');
-                element.style.width = '100%';
             }
 
-            const moveDiv = document.getElementById(this._uid + "_" + index);
-            if(moveDiv){
-                moveDiv.classList.add('hover');
-                this._setSelectedRowWidth(moveDiv);
-            }
+             const moveDiv = document.getElementById(this._uid + "_" + index);
+             if(moveDiv){
+                 moveDiv.classList.add('hover');
+             }
         }
 
         this._beforeMouseMoveIdx = index;
     }
    
+    /**
+     * cssルールの取得
+     * @param {strintg} sele cssクラス名
+     * @returns 
+     */
+    _getRuleBySelector(sele){
+        let rule = null;
+    
+        // stylesheetのリストを取得
+        const sheets = document.styleSheets;
+        for(let i=0; i<sheets.length; i++){
+            // そのstylesheetが持つCSSルールのリストを取得
+            const rules = sheets[i].cssRules;
+            for(let j=0; j<rules.length; j++){
+                // セレクタが一致するか調べる
+                if(sele === rules[j].selectorText){
+                    rule = rules[j];
+                    break;
+                }
+            }
+        }
+        return rule;
+    }
+
     setData(json){
         this._json = json;
         this.update();

@@ -5,3 +5,13 @@
 #divTree .selected {
   font-weight: bold;
 }
+
+#divTree.foldericon.genTree .icon-open {
+  background-image: url('/test/open_folder.svg');
+  background-size: 12px 12px;
+}
+
+#divTree.foldericon.genTree .icon-close {
+  background-image: url('/test/close_folder.svg');
+  background-size: 12px 12px;
+}

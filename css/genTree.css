@@ -1,3 +1,4 @@
+
 .genTree {
   margin:0 0 0 0px;
   padding: 0 0 0 0px;
@@ -5,19 +6,55 @@
 
 .genTree.pl{
   overflow-y: auto;
-  overflow-x: auto;
+  overflow-x: hidden;
   position: relative;
 }
 
+
 .genTree .row {
-  position: absolute;
-  cursor: pointer;
+   width: 100%;
+   position: absolute;
+  
 }
+
+.genTree .indent {
+  height: 100%;
+  float: left;
+
+}
+
+.genTree .icon-open {
+  background-image: url('./img/down.svg');
+  background-repeat: no-repeat;
+  background-position: right 5px center;
+  background-size: 10px 10px;
+}
+
+.genTree .icon-close {
+  background-image: url('./img/right.svg');
+  background-repeat: no-repeat;
+  background-position: right 5px center;
+  background-size: 10px 10px;
+}
+
+
+.genTree .row-content {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;      
+}
+
+.genTree .row-text {
+  white-space: nowrap;
+}
+
+
 .genTree {
     background: white;
     color: #212529;
   }
 
+ 
 /* スクロールバー設定　なぜかこれを設定しないと色も反映されない*/
 .genTree::-webkit-scrollbar { /* スクロールバー全体 */
 		width: 12px; 
