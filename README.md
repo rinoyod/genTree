@@ -25,7 +25,7 @@ var data = [
     }
 ];
 
-const demoTree = new genTree(document.getElementById('div')); //エレメントを指定
+const demoTree = new genTree('demoTree'); //IDを指定
 demoTree.setData(data); //json形式のデータをセット
 
 ```
