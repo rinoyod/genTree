@@ -5,11 +5,35 @@ class genTree {
         genTree.classPath = path;
     }
 
+    /**
+     * タイプが'root'
+     */
+    static get CHECKED_TYPE_ROOT(){
+        return 1;
+    }
+
+    /**
+     * タイプが'node'
+     */
+    static get CHECKED_TYPE_NODE(){
+        return 2;
+    }
+
     //イベントメソッド
     _eClickMethod = function(e,p){return true};  //クリック（処理前）
     _eClickedMethod = function(e,p){return true};//クリック（処理後）
+    _onRenderEventMethod = function(e){}; //表示直後
+    _onRenderRowEventMethod = function(e){}; //１行生成
     
 
+    /**
+     * 
+     * @param {stiring} id DivエレメントのID
+     * @param {{resizer:boolean,rowRender:function,checkedType:number}} option 
+     * @property option.resizer true windowリサイズした時にレンダリング処理させる
+     * @property option.rowRender 1行の表示のカスタマイズ
+     * @property option.checkedType クリックしたときに checkedクラスを付与するかどうか CHECKED_TYPE_ROOT,CHECKED_TYPE_NODEで指定
+     */
     constructor(id, option ={}){
 
         this._parentDivElement = document.getElementById(id);
@@ -34,6 +58,16 @@ class genTree {
 
         this._selectedObj = null;
 
+        this._rowRender = null; //rowrendareカスタムメソッド
+        if('rowRender' in option){
+            this._rowRender = option.rowRender;
+        }
+
+        this._checkedType = 3; //両方チェックが機能する
+        if('checkedType' in option){
+            this._checkedType = option.checkedType;
+        }
+
         //クリックイベント
         this._layer.addEventListener('click', function(e){
             e.stopPropagation();
@@ -44,7 +78,7 @@ class genTree {
             //今クリックした行数を求める
             const height = this._getRowHeight();
             const index = Math.floor(pos.y/height);
-            console.log('topLayer click row[' + index + ']');
+            //console.log('topLayer click row[' + index + ']');
 
             if(this._arrayData.length -1 < index){
                 return;
@@ -55,28 +89,8 @@ class genTree {
 
 
             //selectedの処理
-            if(this._selectedObj != null){
-                this._selectedObj['selected'] = false;
-            }
+            this.setSelected(this._arrayData[index].id);
 
-            for (let i = 0; i < this._layer.childElementCount; i=(i+1)|0) {
-                const idx = this._layer.children[i].id.split('_')[1]|0;
-                if('selected' in this._arrayData[idx]){
-                    delete this._arrayData[idx].selected;
-                    const deleteEl = document.getElementById(this._uid + "_" + idx);
-                    if(deleteEl){
-                        deleteEl.classList.remove('selected');
-                    }
-                    break;
-                }
-            }
-
-            this._arrayData[index]['selected'] = true;
-            this._selectedObj = this._arrayData[index];
-            const selectedEl = document.getElementById(this._uid + "_" + index);
-            if(selectedEl){
-                selectedEl.classList.add('selected');
-            }
 
             if(after == null || after == true){
                 //子供を持ってるいる場合は展開・縮小を行う
@@ -112,13 +126,20 @@ class genTree {
         //スクロールイベント
         this._parentDivElement.addEventListener('scroll', function(e){
             e.preventDefault();
-            console.log('scroll ' + e.currentTarget.scrollTop);
+            //console.log('scroll ' + e.currentTarget.scrollTop);
             this._scrollRender();
         }.bind(this));
 
 
+        if(('resizer' in option) && option.resizer == true){
+            window.addEventListener('resize', function(e){
+                e.preventDefault();
+                this._scrollRender();
+            }.bind(this));
+        }
+
         //jsonデータ
-        this._json;
+        this._json = [];
 
         //デフォルトフォントサイズ
         this._defaultFontSize = 16;
@@ -139,6 +160,9 @@ class genTree {
         //デフォルトspacling
         this._leftPadding = 10;
 
+        //デフォルト1行の高さ
+        this._defaultRowHeigt = -1;
+
 
         //ユニークなID
         this._uid = this._getUniqueStr();
@@ -146,7 +170,7 @@ class genTree {
         
         //デフォルトアイコン（open)
         const iconOpenRules = this._getRuleBySelector('.genTree .icon-open');
-        iconOpenRules.style.backgroundImage = 'url(' +genTree.classPath + '/img/down.svg)';
+        iconOpenRules.style.backgroundImage = `url(${genTree.classPath}/img/down.svg)`;
 
 
         //デフォルトアイコン（close)
@@ -158,16 +182,94 @@ class genTree {
         this._arrayData = [];
         this._tmpArrayData = []; //作業用
 
-        console.log('thisfile ='+ this._getCurrentScript());
+        //console.log('thisfile ='+ this._getCurrentScript());
     }
 
-    //プロパティ
+    /**
+     * フォントサイズを指定します
+     * @property {number}
+     */
     set fontSize(val){
         this._defaultFontSize = val|0;
         if(this._json){
             this._actualHeigth = this._resetActualHeight();
             this.setData(this._json);
         }
+    }
+
+    /**
+     * 1行の高さを指定します
+     * @param val
+     */
+    set rowHeight(val){
+        this._defaultRowHeigt = val;
+    }
+
+    /**
+     * 指定したものをselected状態にする
+     * @param {string} id jsonDataのID
+     */
+    setSelected(id){
+
+
+        let index = -1;
+        for (let i = 0; i < this._arrayData.length; i++) {
+            const data = this._arrayData[i];
+            if(data.id == id){
+                index = i;
+                break;
+            }
+            
+        }
+
+        let workChekedType = 0;
+        if((this._arrayData[index].type == 'root')){
+            workChekedType = workChekedType  + genTree.CHECKED_TYPE_ROOT;
+        }
+        if((this._arrayData[index].type == 'node')){
+            workChekedType = workChekedType  + genTree.CHECKED_TYPE_NODE;
+        }
+
+        if((workChekedType & this._checkedType) != workChekedType){
+            return;
+        }
+
+
+        //selectedの処理
+        if(this._selectedObj != null){
+            this._selectedObj['selected'] = false;
+        }
+
+        for (let i = 0; i < this._layer.childElementCount; i=(i+1)|0) {
+            const idx = this._layer.children[i].id.split('_')[1]|0;
+            if('selected' in this._arrayData[idx]){
+                delete this._arrayData[idx].selected;
+                const deleteEl = document.getElementById(this._uid + "_" + idx);
+                if(deleteEl){
+                    deleteEl.classList.remove('selected');
+                }
+                break;
+            }
+        }
+
+        this._arrayData[index]['selected'] = true;
+        this._selectedObj = this._arrayData[index];
+        const selectedEl = document.getElementById(this._uid + "_" + index);
+        if(selectedEl){
+            selectedEl.classList.add('selected');
+        }
+    }
+
+    getSelectedData(){
+
+        for (let i = 0; i < this._arrayData.length; i++) {
+            const data = this._arrayData[i];
+            if('selected' in data){
+                return data;
+            }
+            
+        }
+        return null;
     }
 
     /**
@@ -227,7 +329,11 @@ class genTree {
 
 
     _getRowHeight(){
-        return (this._actualHeigth + (this._defaultFontMargen*2));
+        if(this._defaultRowHeigt === -1){
+            return (this._actualHeigth + (this._defaultFontMargen*2));
+        }
+
+        return this._defaultRowHeigt;
     }
 
     /**
@@ -321,13 +427,19 @@ class genTree {
         rowContent.classList.add('row-content');
         newDiv.appendChild(rowContent);
 
+        
+        if(this._rowRender == null){
 
-        const textNode = document.createElement('span');
-        textNode.classList.add('rowtext');
-        textNode.style.fontSize = this._defaultFontSize + "px";
-        textNode.style.lineHeight = height + 'px';
-        textNode.textContent = data.name;
-        rowContent.appendChild(textNode);
+            const textNode = document.createElement('span');
+        
+            textNode.classList.add('rowtext');
+            textNode.style.fontSize = this._defaultFontSize + "px";
+            textNode.style.lineHeight = height + 'px';
+            textNode.textContent = data.name;
+            rowContent.appendChild(textNode);
+        }else {
+            rowContent.appendChild(this._rowRender(data));
+        }
 
         //アイコン
         if(data.type === 'root'){
@@ -386,6 +498,10 @@ class genTree {
         //削除処理
         const deleteElementList = [];
 
+        //表示されたるリストに該当するデータ
+        const viewArrayData = [];
+
+
         for (let i = 0; i < this._layer.childElementCount; i=(i+1)|0) {
             const idx = this._layer.children[i].id.split('_')[1];
             if( !(idx >= renderInfo.hideTopIdx && idx < renderInfo.hideBottomIdx)){
@@ -404,15 +520,33 @@ class genTree {
         for(let i = renderInfo.hideTopIdx; i <= renderInfo.hideBottomIdx|0; i=(i+1)|0){
 			if(document.getElementById(this._uid + "_" + i) == null){
 				const newDiv = this._createRowDiv(i)
+                viewArrayData.push(this._arrayData[i]);
+                this._onRenderRowEventMethod(this._arrayData[i]);
 				df.appendChild(newDiv);
 
-			} 
+			}
 		}
         this._layer.appendChild(df);
 
-
-        
+        this._onRenderEventMethod(viewArrayData);
     }
+
+    /**
+     * 表示・表示更新タイミングで呼ばれます。
+     * @param {function} callback 
+     */
+    onRenderEvent(callback){
+        this._onRenderEventMethod = callback;
+    }
+
+    /**
+     * 1行作成(表示）されるタイミングで呼ばれます
+     * @param {function} callback 
+     */
+    onRenderRowEvent(callback){
+        this._onRenderRowEventMethod = callback;
+    }
+
 
     _getUniqueStr(myStrong){
         let strong = 1000;
@@ -510,11 +644,23 @@ class genTree {
         return rule;
     }
 
+    /**
+     * データを設定します
+     * @param {{}} json 
+     */
     setData(json){
         this._json = json;
         this.update();
     }
     
+    /**
+     * データを取得します
+     * @returns 
+     */
+    getData(){
+        return this._json;
+    }
+
     /**
      * ある行リックされた時、処理が実行前に呼ばれます
      * falseを返すと後続の処理を行いません
@@ -530,5 +676,30 @@ class genTree {
      */
     eClicked(callback){
         this._eClickedMethod = callback;
+    }
+
+    /**
+     * 指定したRowのエレメントIDからしていた行のデータを取得します
+     */
+    getDataFromElementId(elementId){
+
+        return this._arrayData[elementId.replace(this._uid + "_", "")];
+    }
+
+    /**
+     * 
+     * @param {*} id 
+     * @returns 
+     */
+    getDataById(id){
+
+        for (let i = 0; i < this._arrayData.length; i++) {
+            const data = this._arrayData[i];
+            if(data.id == id){
+                return data;
+            }
+            
+        }
+        return null;
     }
 }
