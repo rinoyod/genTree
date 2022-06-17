@@ -1,67 +1,13 @@
-
-.genTree {
-  margin:0 0 0 0px;
-  padding: 0 0 0 0px;
-}
-
-.genTree.pl{
-  overflow-y: auto;
-  overflow-x: hidden;
-}
-
-
-.genTree .row {
-   width: 100%;
-   position: absolute;
-   cursor: pointer;
-}
-
-.genTree .indent {
-  height: 100%;
-  float: left;
-
-}
-
-.genTree .icon-open {
-  background-image: url('./img/down.svg');
-  background-repeat: no-repeat;
-  background-position: right 5px center;
-  background-size: 10px 10px;
-}
-
-.genTree .icon-close {
-  background-image: url('./img/right.svg');
-  background-repeat: no-repeat;
-  background-position: right 5px center;
-  background-size: 10px 10px;
-}
-
-
-.genTree .row-content {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;      
-}
-
-.genTree .row-text {
-  white-space: nowrap;
-}
-
-
-.genTree {
-    background: white;
-    color: #212529;
-  }
-
- 
-/* スクロールバー設定　なぜかこれを設定しないと色も反映されない*/
-.genTree::-webkit-scrollbar { /* スクロールバー全体 */
-		width: 12px; 
-		height:12px;
-	}
-
-.genTree::-webkit-scrollbar-thumb{ /* スクロールバーのある部分 */
-		background: #a89e9e;
-}
-.genTree::-webkit-scrollbar-track{background:#e0d8d8;}
-.genTree::-webkit-scrollbar-corner{background:rgba(184, 182, 182, 0);}
+.genTree { margin: 0px; padding: 0px; }
+.genTree.pl { overflow: hidden auto; position: relative; }
+.genTree .row { width: 100%; position: absolute; cursor: pointer; }
+.genTree .indent { height: 100%; float: left; }
+.genTree .icon-open { background-image: url("/vendor/genTree/img/down.svg"); background-repeat: no-repeat; background-position: right 5px center; background-size: 10px 10px; }
+.genTree .icon-close { background-image: url("/vendor/genTree/img/right.svg"); background-repeat: no-repeat; background-position: right 5px center; background-size: 10px 10px; }
+.genTree .row-content { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.genTree .row-text { white-space: nowrap; }
+.genTree { background: white; color: rgb(33, 37, 41); }
+.genTree::-webkit-scrollbar { width: 12px; height: 12px; }
+.genTree::-webkit-scrollbar-thumb { background: rgb(168, 158, 158); }
+.genTree::-webkit-scrollbar-track { background: rgb(224, 216, 216); }
+.genTree::-webkit-scrollbar-corner { background: rgba(184, 182, 182, 0); }
