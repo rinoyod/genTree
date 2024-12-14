@@ -211,6 +211,7 @@ const tree = new genTree("container", {
 | `name`        | Yes  | `string` | ツリーに表示される名前                      |
 | `type`        | Yes  | `string` | ノードのタイプ 'root' or 'node' rootはサブツリーがある場合、ない場合はnodeを指定 |
 | `open`        | No   | `boolean`| ノードを展開するかどうか。typeが'root'の場合必要。trueの場合はサブツリーが展開されて表示される      |
+| `iconClass`   | No   | `string` | アイコンの部分に独自のクラス名を付与します（これを使い各ノードのアイコンを変更できます）|
 | `child`       | No   | `array`  | 子ノードの配列                |
 | `selected`(readOnly)    | No   |`boolean` |  ライブラリ側が付与。該当箇所が選択された場合追加される  |
 | `level`(readOnly)      | No   | `number`  | 階層レベル（自動設定されます） |
