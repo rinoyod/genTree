@@ -11,6 +11,7 @@ type GenTreeNode = {
     name: string; // ノードの名前
     type: string; // ノードの種類（例：root, nodeなど）
     child?: GenTreeNode[]; // 子ノードの配列
+    iconClass?: string; //アイコンを個別に設定したい時等に使う（展開、閉じるアイコンのところに追加される）
     [key: string]: any; // ユーザーが追加するカスタムプロパティを許容
 }
 
@@ -588,7 +589,10 @@ export class genTree <T extends unknown[]>{
             }else{
                 indent.classList.add('icon-close');
             }
+        }
 
+        if(('iconClass' in data) && data.iconClass){
+            indent.classList.add(data.iconClass);
         }
 
         return newDiv;
