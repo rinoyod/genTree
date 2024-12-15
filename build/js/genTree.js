@@ -454,6 +454,9 @@ export class genTree {
                 indent.classList.add('icon-close');
             }
         }
+        if (('iconClass' in data) && data.iconClass) {
+            indent.classList.add(data.iconClass);
+        }
         return newDiv;
     }
     /**
