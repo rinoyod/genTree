@@ -1,12 +1,12 @@
 
-type option<T extends unknown[]> = {
+export type genTreeOption<T extends unknown[]> = {
     resizer? :boolean,
     rowRender? :((data: GenTreeNode) => void),
     checkedType?: number,
     fontSize?: number,
 };
 
-type GenTreeNode = {
+export type GenTreeNode = {
     id: string; // ノードの一意な識別子
     name: string; // ノードの名前
     type: string; // ノードの種類（例：root, nodeなど）
@@ -54,15 +54,15 @@ export class genTree <T extends unknown[]>{
     //#rowRender: ((...args: T) => any) | undefined = undefined;
     #rowRender: ((data: GenTreeNode) => any) | undefined = undefined;
 
-    #onCLickEventMethod: ((element:HTMLElement, data:GenTreeNode) => boolean)| undefined = undefined;
-    #onCLickedEventMethod: ((element:HTMLElement, data:GenTreeNode) => boolean)| undefined = undefined;
+    #onCLickEventMethod: ((element:HTMLElement, data:GenTreeNode) => Promise<boolean> | boolean)| undefined = undefined;
+    #onCLickedEventMethod: ((element:HTMLElement, data:GenTreeNode) => Promise<boolean> | boolean)| undefined = undefined;
     
     #onRenderRowEventMethod:((data: GenTreeNode) => any) | undefined = undefined;
     #onRenderEventMethod:((datas: GenTreeNode[]) => any) | undefined = undefined;
 
     #beforeMouseMoveIdx = -1;
 
-    constructor(el:HTMLElement, option?:option<T>){
+    constructor(el:HTMLElement, option?:genTreeOption<T>){
         this.#parentDivElement = el;
         this.#parentDivElement.classList.add('genTree');
         this.#parentDivElement.classList.add('pl');
@@ -591,8 +591,12 @@ export class genTree <T extends unknown[]>{
             }
         }
 
-        if(('iconClass' in data) && data.iconClass){
-            indent.classList.add(data.iconClass);
+        if (('iconClass' in data) && data.iconClass) {
+            const words = data.iconClass.split(" ");
+            for (let i = 0; i < words.length; i++) {
+                const word = words[i];
+                indent.classList.add(word);
+            }
         }
 
         return newDiv;
@@ -616,10 +620,10 @@ export class genTree <T extends unknown[]>{
     }
 
     /**
-     * 表示・表示更新タイミングで呼ばれます。
+     * ある行リックされた時、処理が実行前に呼ばれます
      * @param {function} callback 
      */
-    onClickEvent(callback:(element:HTMLElement, data: GenTreeNode) => boolean){
+    onClickEvent(callback:(element:HTMLElement, data: GenTreeNode) => Promise<boolean> | boolean){
         this.#onCLickEventMethod = callback;
     }
 
@@ -627,7 +631,7 @@ export class genTree <T extends unknown[]>{
      * ある行リックされた時、処理が実行後に呼ばれます
      * @param {function} callback 
      */
-    onClickedEvent(callback:(element:HTMLElement, data: GenTreeNode) => boolean){
+    onClickedEvent(callback:(element:HTMLElement, data: GenTreeNode) =>Promise<boolean> | boolean){
         this.#onCLickedEventMethod = callback;
     }
     
