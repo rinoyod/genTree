@@ -591,8 +591,12 @@ export class genTree <T extends unknown[]>{
             }
         }
 
-        if(('iconClass' in data) && data.iconClass){
-            indent.classList.add(data.iconClass);
+        if (('iconClass' in data) && data.iconClass) {
+            const words = data.iconClass.split(" ");
+            for (let i = 0; i < words.length; i++) {
+                const word = words[i];
+                indent.classList.add(word);
+            }
         }
 
         return newDiv;
