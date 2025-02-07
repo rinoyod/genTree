@@ -1,7 +1,7 @@
 
 export type genTreeOption<T extends unknown[]> = {
-    resizer? :boolean,
-    rowRender? :((data: GenTreeNode) => void),
+    resizer?: boolean,
+    rowRender?: ((data: GenTreeNode) => void),
     checkedType?: number,
     fontSize?: number,
 };
@@ -15,26 +15,26 @@ export type GenTreeNode = {
     [key: string]: any; // ユーザーが追加するカスタムプロパティを許容
 }
 
-export class genTree <T extends unknown[]>{
+export class genTree<T extends unknown[]> {
 
     /**
      * タイプが'root'
      */
-    static get CHECKED_TYPE_ROOT(){
+    static get CHECKED_TYPE_ROOT() {
         return 1;
     }
 
     /**
      * タイプが'node'
      */
-    static get CHECKED_TYPE_NODE(){
+    static get CHECKED_TYPE_NODE() {
         return 2;
     }
 
     #parentDivElement;
     #layer;
     #checkedType = 3;
-    #dataJson:any;
+    #dataJson: any;
     #defaultFontSize = 16;
     #defaultFontMargen = 2;
     #actualHeigth = 0;
@@ -47,22 +47,22 @@ export class genTree <T extends unknown[]>{
     #defaultRowHeigt = -1;
     //ユニークなID
     #uid = "";
-    #arrayData:GenTreeNode[] = [];
-    #tmpArrayData:GenTreeNode[] = []; //作業用
-
+    #arrayData: GenTreeNode[] = [];
+    #tmpArrayData: GenTreeNode[] = []; //作業用
+    #selectedObj: GenTreeNode | null;
 
     //#rowRender: ((...args: T) => any) | undefined = undefined;
     #rowRender: ((data: GenTreeNode) => any) | undefined = undefined;
 
-    #onCLickEventMethod: ((element:HTMLElement, data:GenTreeNode) => Promise<boolean> | boolean)| undefined = undefined;
-    #onCLickedEventMethod: ((element:HTMLElement, data:GenTreeNode) => Promise<boolean> | boolean)| undefined = undefined;
-    
-    #onRenderRowEventMethod:((data: GenTreeNode) => any) | undefined = undefined;
-    #onRenderEventMethod:((datas: GenTreeNode[]) => any) | undefined = undefined;
+    #onCLickEventMethod: ((element: HTMLElement, data: GenTreeNode) => Promise<boolean> | boolean) | undefined = undefined;
+    #onCLickedEventMethod: ((element: HTMLElement, data: GenTreeNode) => Promise<boolean> | boolean) | undefined = undefined;
+
+    #onRenderRowEventMethod: ((data: GenTreeNode) => any) | undefined = undefined;
+    #onRenderEventMethod: ((datas: GenTreeNode[]) => any) | undefined = undefined;
 
     #beforeMouseMoveIdx = -1;
 
-    constructor(el:HTMLElement, option?:genTreeOption<T>){
+    constructor(el: HTMLElement, option?: genTreeOption<T>) {
         this.#parentDivElement = el;
         this.#parentDivElement.classList.add('genTree');
         this.#parentDivElement.classList.add('pl');
@@ -71,7 +71,7 @@ export class genTree <T extends unknown[]>{
         const layer = document.createElement('div');
         layer.style.position = 'absolute';
         layer.style.left = '0px';
-        layer.style.top  = '0px';
+        layer.style.top = '0px';
         layer.style.width = '100%';
         layer.style.height = '100%';
         layer.style.border = '0px';
@@ -83,20 +83,20 @@ export class genTree <T extends unknown[]>{
 
         this.#layer = layer;
 
-        
+        this.#selectedObj = null;
 
 
         //rowrendareカスタムメソッド
-        if(option && ("rowRender" in option)){
+        if (option && ("rowRender" in option)) {
             this.#rowRender = option.rowRender;
         }
 
-        if(option && ("checkedType" in option)){
+        if (option && ("checkedType" in option)) {
             this.#checkedType = <number>option.checkedType;
         }
 
-        if(option && ('resizer' in option) && option.resizer == true){
-            window.addEventListener('resize', (e)=>{
+        if (option && ('resizer' in option) && option.resizer == true) {
+            window.addEventListener('resize', (e) => {
                 e.preventDefault();
                 this.#scrollRender();
             });
@@ -106,7 +106,7 @@ export class genTree <T extends unknown[]>{
         this.#dataJson = [];
 
         //デフォルトフォントサイズ
-        if(option && ("fontSize" in option)){
+        if (option && ("fontSize" in option)) {
             this.#defaultFontSize = <number>option.fontSize;
         }
 
@@ -117,7 +117,7 @@ export class genTree <T extends unknown[]>{
         this.#uid = this.#getUniqueStr();
 
 
-        this.#layer.addEventListener("click", (e)=>{
+        this.#layer.addEventListener("click", (e) => {
             e.stopPropagation();
             e.preventDefault();
 
@@ -127,17 +127,17 @@ export class genTree <T extends unknown[]>{
             const height = this.#getRowHeight();
             const index = Math.floor(pos.y / height);
 
-            if(this.#arrayData.length -1 < index) return;
+            if (this.#arrayData.length - 1 < index) return;
 
             //ユーザー側のクリックイベントの実行
             let afrer = (this.#onCLickEventMethod) ? this.#onCLickEventMethod(<HTMLElement>e.currentTarget, this.#arrayData[index]) : true;
-            if(!afrer) afrer = true;
-            
+            if (!afrer) afrer = true;
+
             this.setSelected(this.#arrayData[index].id);
 
-            if(afrer){
+            if (afrer) {
                 //子供を持ってるいる場合は展開・縮小を行う
-                if(this.#arrayData[index].type === 'root'){
+                if (this.#arrayData[index].type === 'root') {
                     this.#arrayData[index].open = !(this.#arrayData[index].open);
                     this.setData(this.#dataJson);
                     this.#beforeMouseMoveIdx = -1;//絶対動作させるため値をリセットさせる
@@ -145,7 +145,7 @@ export class genTree <T extends unknown[]>{
                 }
             }
 
-            if(this.#onCLickedEventMethod) this.#onCLickedEventMethod(<HTMLElement>e.currentTarget, this.#arrayData[index])
+            if (this.#onCLickedEventMethod) this.#onCLickedEventMethod(<HTMLElement>e.currentTarget, this.#arrayData[index])
 
         });
 
@@ -157,7 +157,7 @@ export class genTree <T extends unknown[]>{
             const pos = this.#getPointerEvetPosition(<PointerEvent>e);
             //カーソルのある行数を求める
             const height = this.#getRowHeight();
-            const index = Math.floor(pos.y/height);
+            const index = Math.floor(pos.y / height);
 
             this.#classAddHover(index);
         });
@@ -176,38 +176,38 @@ export class genTree <T extends unknown[]>{
      * フォントサイズを指定します
      * @property {number}
      */
-    set fontSize(val:number){
-        this.#defaultFontSize = val|0;
-        if(this.#dataJson){
+    set fontSize(val: number) {
+        this.#defaultFontSize = val | 0;
+        if (this.#dataJson) {
             this.#actualHeigth = this.#resetActualHeight();
             this.setData(this.#dataJson);
         }
-    } 
+    }
 
     /**
      * 1行の高さを指定します
      * @param val
      */
-    set rowHeight(val:number){
+    set rowHeight(val: number) {
         this.#defaultRowHeigt = val;
     }
 
 
     //前回セットした位置を覚えせてまた同じ位置だったら無駄な処理をさせない様にする
     //マウスが移動したときにその行に'hover'を追加する　
-    #classAddHover(index:number){
+    #classAddHover(index: number) {
 
-        if(this.#beforeMouseMoveIdx != index){
+        if (this.#beforeMouseMoveIdx != index) {
             const beforeDiv = this.#layer.getElementsByClassName('hover');
             for (let i = 0; i < beforeDiv.length; i++) {
                 const element = beforeDiv[i];
                 element.classList.remove('hover');
             }
 
-             const moveDiv = document.getElementById(this.#uid + "_" + index);
-             if(moveDiv){
-                 moveDiv.classList.add('hover');
-             }
+            const moveDiv = document.getElementById(this.#uid + "_" + index);
+            if (moveDiv) {
+                moveDiv.classList.add('hover');
+            }
         }
 
         this.#beforeMouseMoveIdx = index;
@@ -218,30 +218,30 @@ export class genTree <T extends unknown[]>{
      * @param {PointerEvent} pointerEvent ポインターイベント
      * @returns {{x:number,y:number}}
      */
-    #getPointerEvetPosition(pointerEvent:PointerEvent){
-        
+    #getPointerEvetPosition(pointerEvent: PointerEvent) {
+
         const clickX = pointerEvent.pageX;
         const clickY = pointerEvent.pageY;
-        
+
         let positionX = 0;
         let positionY = 0;
-        if(pointerEvent.currentTarget){
+        if (pointerEvent.currentTarget) {
             const elemnt = <Element>pointerEvent.currentTarget;
             const clientRect = elemnt.getBoundingClientRect();
-            positionX  = clientRect.left + window.scrollX;
-            positionY  = clientRect.top  + window.scrollY;
-    
+            positionX = clientRect.left + window.scrollX;
+            positionY = clientRect.top + window.scrollY;
+
         }
 
         // 要素内におけるクリック位置を計算
         const x = clickX - positionX;
         const y = clickY - positionY;
-        
 
-        return {x:x,y:y}
+
+        return { x: x, y: y }
     }
 
-    #resetActualHeight(){
+    #resetActualHeight() {
         const tesSpan = document.createElement('span');
         tesSpan.textContent = 'あ';
         tesSpan.style.fontSize = this.#defaultFontSize + "px";
@@ -250,15 +250,15 @@ export class genTree <T extends unknown[]>{
         this.#parentDivElement.removeChild(tesSpan);
 
         return rect[0].rect.height;
-    }    
-    
+    }
+
     /**
      * JavaScriptで文字列の矩形領域を１文字ずつ取得する
      * @param {Element} elem Element
      * @returns {{character:string,rect:DOMRect}[]}
      */
-    #retrieveCharactersRects(elem:Element):{character:string,rect:DOMRect}[] {
-        if(elem.nodeType == elem.TEXT_NODE) {
+    #retrieveCharactersRects(elem: Element): { character: string, rect: DOMRect }[] {
+        if (elem.nodeType == elem.TEXT_NODE) {
 
             const range = elem.ownerDocument.createRange();
 
@@ -271,12 +271,12 @@ export class genTree <T extends unknown[]>{
 
             const results = [];
 
-            while(current_pos  < end_pos) {
+            while (current_pos < end_pos) {
                 range.setStart(elem, current_pos);
-                range.setEnd(elem, (current_pos + 1)|0);
-                current_pos = (current_pos+1)|0;
+                range.setEnd(elem, (current_pos + 1) | 0);
+                current_pos = (current_pos + 1) | 0;
 
-                results.push({character: range.toString(), rect: range.getBoundingClientRect()});
+                results.push({ character: range.toString(), rect: range.getBoundingClientRect() });
             }
 
             range.detach();
@@ -287,8 +287,8 @@ export class genTree <T extends unknown[]>{
 
             const results = [];
             const childNodesLength = elem.childNodes.length;
-            for(let i = 0; i < (childNodesLength|0); i=(i+1)|0) {
-                results.push(this.#retrieveCharactersRects(<Element>elem.childNodes[i|0]));
+            for (let i = 0; i < (childNodesLength | 0); i = (i + 1) | 0) {
+                results.push(this.#retrieveCharactersRects(<Element>elem.childNodes[i | 0]));
             }
 
             // 結果の配列をフラットにする
@@ -296,12 +296,12 @@ export class genTree <T extends unknown[]>{
         }
         //console.log("retrieveCharactersRects return null");
 
-    }    
+    }
 
-    #getUniqueStr(myStrong?:number){
+    #getUniqueStr(myStrong?: number) {
         let strong = 1000;
         if (myStrong) strong = myStrong;
-        return new Date().getTime().toString(16)  + Math.floor(strong*Math.random()).toString(16);
+        return new Date().getTime().toString(16) + Math.floor(strong * Math.random()).toString(16);
     }
 
     /**
@@ -316,42 +316,42 @@ export class genTree <T extends unknown[]>{
      *      "{ background-color: yellow; }"
      * )
      */
-    #cssRuleUpdate(keySelecter:string, selector:string, updateRule:string){
-     
+    #cssRuleUpdate(keySelecter: string, selector: string, updateRule: string) {
+
         const sheets = document.styleSheets;
 
-        let rules:any = null;
-        let sheet:CSSStyleSheet|undefined;
+        let rules: any = null;
+        let sheet: CSSStyleSheet | undefined;
 
-        for(let i=0; i<sheets.length; i++){
+        for (let i = 0; i < sheets.length; i++) {
             // keySelecterが持つCSSシートを取得
-            try{
+            try {
                 rules = sheets[i].cssRules;
-                for(let j=0; j<rules.length; j++){
+                for (let j = 0; j < rules.length; j++) {
                     // セレクタが一致するか調べる
-                    if(keySelecter === rules[j].selectorText){
+                    if (keySelecter === rules[j].selectorText) {
                         sheet = <CSSStyleSheet>rules[j];
                         break;
                     }
                 }
-                if(sheet !== undefined) break;
-            }catch(e){
+                if (sheet !== undefined) break;
+            } catch (e) {
 
             }
         }
 
-        if(sheet !== undefined){
+        if (sheet !== undefined) {
             // 特定のルールを探して削除してから再挿入
             for (let i = 0; i < sheet.cssRules.length; i++) {
                 const rules = <CSSStyleRule>sheet.cssRules[i];
-                if ( rules.selectorText === selector) {
-                sheet.deleteRule(i); // 削除
-                break;
+                if (rules.selectorText === selector) {
+                    sheet.deleteRule(i); // 削除
+                    break;
                 }
             }
 
             //ルール追加
-            sheet.insertRule(selector + " " + updateRule,sheet.cssRules.length);
+            sheet.insertRule(selector + " " + updateRule, sheet.cssRules.length);
         }
     }
 
@@ -359,9 +359,9 @@ export class genTree <T extends unknown[]>{
      * 一行の高さを求めます
      * @returns {number}
      */
-    #getRowHeight(){
-        if(this.#defaultRowHeigt === -1){
-            return (this.#actualHeigth + (this.#defaultFontMargen*2));
+    #getRowHeight() {
+        if (this.#defaultRowHeigt === -1) {
+            return (this.#actualHeigth + (this.#defaultFontMargen * 2));
         }
 
         return this.#defaultRowHeigt;
@@ -371,17 +371,53 @@ export class genTree <T extends unknown[]>{
      * 指定したものをselected状態にする
      * @param {string} id jsonDataのID
      */
-    setSelected(id:string){
+    setSelected(id: string) {
 
         let index = -1;
         const length = this.#arrayData.length;
-        for (let i = 0; i < (length|0); i=(i+1)|0) {
+        for (let i = 0; i < (length | 0); i = (i + 1) | 0) {
             const data = this.#arrayData[i];
-            if(data.id === id){
+            if (data.id === id) {
                 index = i;
                 break;
             }
-            
+
+        }
+
+        let workChekedType = 0;
+        if ((this.#arrayData[index].type == 'root')) {
+            workChekedType = workChekedType + genTree.CHECKED_TYPE_ROOT;
+        }
+        if ((this.#arrayData[index].type == 'node')) {
+            workChekedType = workChekedType + genTree.CHECKED_TYPE_NODE;
+        }
+
+        if ((workChekedType & this.#checkedType) != workChekedType) {
+            return;
+        }
+
+        //selectedの処理
+        if (this.#selectedObj != null) {
+            this.#selectedObj['selected'] = false;
+        }
+
+        for (let i = 0; i < this.#layer.childElementCount; i = (i + 1) | 0) {
+            const idx = <number>(<unknown>(this.#layer.children[i].id.split('_')[1])) | 0;
+            if ('selected' in this.#arrayData[idx]) {
+                delete this.#arrayData[idx].selected;
+                const deleteEl = document.getElementById(this.#uid + "_" + idx);
+                if (deleteEl) {
+                    deleteEl.classList.remove('selected');
+                }
+                break;
+            }
+        }
+
+        this.#arrayData[index]['selected'] = true;
+        this.#selectedObj = this.#arrayData[index];
+        const selectedEl = document.getElementById(this.#uid + "_" + index);
+        if (selectedEl) {
+            selectedEl.classList.add('selected');
         }
     }
 
@@ -389,7 +425,7 @@ export class genTree <T extends unknown[]>{
      * データを設定します
      * @param {{}} json 
      */
-    setData(json:GenTreeNode[]){
+    setData(json: GenTreeNode[]) {
         this.#dataJson = json;
         this.update();
     }
@@ -397,7 +433,7 @@ export class genTree <T extends unknown[]>{
     /**
      * 表示を更新する
      */
-    update(){
+    update() {
         this.#tmpArrayData = [];
         this.#toArrayData(this.#dataJson);
         this.#arrayData = this.#tmpArrayData;
@@ -408,40 +444,40 @@ export class genTree <T extends unknown[]>{
     /**
      * レイヤーのリサイズをする
      */
-    #layerReSzie(){
+    #layerReSzie() {
 
         //横幅取得
-        const width = Number(this.#parentDivElement.style.width.replace('px',''));
+        const width = Number(this.#parentDivElement.style.width.replace('px', ''));
 
         //縦幅取得
         //縦幅は行数×1行の高さで求める
         const rowHeight = this.#getRowHeight();
-        let height = (this.#arrayData.length * rowHeight)|0;
+        let height = (this.#arrayData.length * rowHeight) | 0;
 
         //高さは元のウィンドウより小さい場合は元ウインドウサイズに合わせる
-        const orgHeight = Number(this.#parentDivElement.style.height.replace('px',''));
-        if(height < orgHeight){
+        const orgHeight = Number(this.#parentDivElement.style.height.replace('px', ''));
+        if (height < orgHeight) {
             height = orgHeight;
         }
 
         //値をセット
-       // this._layer.style.width = width + 'px';
+        // this._layer.style.width = width + 'px';
         this.#layer.style.height = height + 'px';
     }
-    
+
     /**
      * josn形式から配列に変換する(全て上書き)
      * @param {*} json 
      */
-    #toArrayData(json:GenTreeNode[], level =0){
+    #toArrayData(json: GenTreeNode[], level = 0) {
 
-        if(!json) return;
-        
+        if (!json) return;
+
         //一番上は配列とする
-        
 
-        const len = json.length|0;
-        for(let i=0; i<(len|0); i=(i+1)|0){
+
+        const len = json.length | 0;
+        for (let i = 0; i < (len | 0); i = (i + 1) | 0) {
             const obj = json[i];
 
             const pushData = obj;
@@ -449,23 +485,23 @@ export class genTree <T extends unknown[]>{
 
             this.#tmpArrayData.push(pushData);
 
-            if( (obj.type === "root") &&
+            if ((obj.type === "root") &&
                 (obj.open && ("open" in obj)) &&
-                ("child" in obj)){
-                    this.#toArrayData(<GenTreeNode[]>obj["child"], (level+1)|0);
+                ("child" in obj)) {
+                this.#toArrayData(<GenTreeNode[]>obj["child"], (level + 1) | 0);
             }
         }
     }
 
-    #render(){
+    #render() {
 
         //子要素を全て消す
         while (this.#layer.firstChild) this.#layer.removeChild(this.#layer.firstChild);
 
         this.#scrollRender();
     }
-    
-    #scrollRender(){
+
+    #scrollRender() {
 
         const renderInfo = this.#getViewRenderInfo();
 
@@ -477,83 +513,85 @@ export class genTree <T extends unknown[]>{
 
 
         const layerCount = this.#layer.childElementCount;
-        for (let i = 0; i < layerCount; i=(i+1)|0) {
+        for (let i = 0; i < layerCount; i = (i + 1) | 0) {
             const idx = Number(this.#layer.children[i].id.split('_')[1]);
-            if( !(idx >= renderInfo.hideTopIdx && idx < renderInfo.hideBottomIdx)){
-                deleteElementList.push(this.#layer.children[i|0]);
+            if (!(idx >= renderInfo.hideTopIdx && idx < renderInfo.hideBottomIdx)) {
+                deleteElementList.push(this.#layer.children[i | 0]);
             }
-            
+
         }
 
-        for(let i = 0; i< deleteElementList.length; i= (i+1)|0){
-			const deleteRow = deleteElementList[i];
-            if(deleteRow.parentNode)
-			    deleteRow.parentNode.removeChild(deleteRow);
-		}
+        for (let i = 0; i < deleteElementList.length; i = (i + 1) | 0) {
+            const deleteRow = deleteElementList[i];
+            if (deleteRow.parentNode)
+                deleteRow.parentNode.removeChild(deleteRow);
+        }
 
         //追加処理
         const df = document.createDocumentFragment();
         const renderBottomIdx = renderInfo.hideBottomIdx;
-        for(let i = renderInfo.hideTopIdx; i <= (renderBottomIdx|0); i=(i+1)|0){
-			if(document.getElementById(this.#uid + "_" + i) == null){
-				const newDiv = this.#createRowDiv  (i)
+        for (let i = renderInfo.hideTopIdx; i <= (renderBottomIdx | 0); i = (i + 1) | 0) {
+            if (document.getElementById(this.#uid + "_" + i) == null) {
+                const newDiv = this.#createRowDiv(i)
                 viewArrayData.push(this.#arrayData[i]);
-                if(this.#onRenderRowEventMethod) this.#onRenderRowEventMethod(this.#arrayData[i]);
-				df.appendChild(newDiv);
+                if (this.#onRenderRowEventMethod) this.#onRenderRowEventMethod(this.#arrayData[i]);
+                df.appendChild(newDiv);
 
-			}
-		}
+            }
+        }
         this.#layer.appendChild(df);
 
-        if(this.#onRenderEventMethod) this.#onRenderEventMethod(viewArrayData);
+        if (this.#onRenderEventMethod) this.#onRenderEventMethod(viewArrayData);
     }
 
     #getViewRenderInfo() {
         //表示されてる一番上の位置と、下の位置を取得(px)
-        const viewTop = this.#parentDivElement.scrollTop|0;
+        const viewTop = this.#parentDivElement.scrollTop | 0;
         const viewBottom = this.#parentDivElement.offsetHeight + viewTop;
 
         const rowHeight = this.#getRowHeight();
         //
-        const viewTopIdx    = Math.floor(viewTop / rowHeight);
+        const viewTopIdx = Math.floor(viewTop / rowHeight);
         const viewBottomIdx = Math.floor(viewBottom / rowHeight);
 
-        let hideTopIdx = (viewTopIdx -3)|0;
-        let hideBottomIdx = (viewBottomIdx +3)|0;
+        let hideTopIdx = (viewTopIdx - 3) | 0;
+        let hideBottomIdx = (viewBottomIdx + 3) | 0;
 
-        if(hideTopIdx < 0){
+        if (hideTopIdx < 0) {
             hideTopIdx = 0;
         }
 
-        if(hideBottomIdx > (this.#arrayData.length -1)){
-            hideBottomIdx = this.#arrayData.length -1;
+        if (hideBottomIdx > (this.#arrayData.length - 1)) {
+            hideBottomIdx = this.#arrayData.length - 1;
         }
 
-        return {viewTopIdx: viewTopIdx,
-                viewBottomIdx: viewBottomIdx,
-                hideTopIdx: hideTopIdx,
-                hideBottomIdx: hideBottomIdx};
+        return {
+            viewTopIdx: viewTopIdx,
+            viewBottomIdx: viewBottomIdx,
+            hideTopIdx: hideTopIdx,
+            hideBottomIdx: hideBottomIdx
+        };
 
     }
 
-    #createRowDiv(rowId:number){
+    #createRowDiv(rowId: number) {
 
         const height = this.#getRowHeight();
 
         const newDiv = document.createElement('div');
         newDiv.style.height = height + 'px';
-        newDiv.style.top   = (rowId * height) + 'px';
+        newDiv.style.top = (rowId * height) + 'px';
         newDiv.id = this.#uid + '_' + rowId;
         newDiv.classList.add('row');
 
         const data = <GenTreeNode>this.#arrayData[rowId];
 
 
-        if(!('level' in data)){
+        if (!('level' in data)) {
             console.log('not level data=' + data);
         }
 
-        if(('selected' in data) && data.selected === true){
+        if (('selected' in data) && data.selected === true) {
             newDiv.classList.add('selected');
         }
 
@@ -561,32 +599,32 @@ export class genTree <T extends unknown[]>{
         //インデント
         const indent = document.createElement('div');
         indent.classList.add('indent');
-        indent.style.width = this.#leftPadding + this.#indent * (data.level +1) +"px";
+        indent.style.width = this.#leftPadding + this.#indent * (data.level + 1) + "px";
         newDiv.appendChild(indent);
 
         const rowContent = document.createElement('div');
         rowContent.classList.add('row-content');
         newDiv.appendChild(rowContent);
 
-        
-        if(this.#rowRender == null){
+
+        if (this.#rowRender == null) {
 
             const textNode = document.createElement('span');
-        
+
             textNode.classList.add('rowtext');
             textNode.style.fontSize = this.#defaultFontSize + "px";
             textNode.style.lineHeight = height + 'px';
             textNode.textContent = data.name;
             rowContent.appendChild(textNode);
-        }else {
+        } else {
             rowContent.appendChild(this.#rowRender(data));
         }
 
         //アイコン
-        if(data.type === 'root'){
-            if(('open' in data) && data.open){
+        if (data.type === 'root') {
+            if (('open' in data) && data.open) {
                 indent.classList.add('icon-open');
-            }else{
+            } else {
                 indent.classList.add('icon-close');
             }
         }
@@ -607,15 +645,15 @@ export class genTree <T extends unknown[]>{
      * 1行作成(表示）されるタイミングで呼ばれます
      * @param {function} callback 
      */
-    onRenderRowEvent(callback: (data: GenTreeNode) => void){
+    onRenderRowEvent(callback: (data: GenTreeNode) => void) {
         this.#onRenderRowEventMethod = callback;
     }
-    
+
     /**
      * 表示・表示更新タイミングで呼ばれます。
      * @param {function} callback 
      */
-    onRenderEvent(callback:(data: GenTreeNode[]) => void){
+    onRenderEvent(callback: (data: GenTreeNode[]) => void) {
         this.#onRenderEventMethod = callback;
     }
 
@@ -623,7 +661,7 @@ export class genTree <T extends unknown[]>{
      * ある行リックされた時、処理が実行前に呼ばれます
      * @param {function} callback 
      */
-    onClickEvent(callback:(element:HTMLElement, data: GenTreeNode) => Promise<boolean> | boolean){
+    onClickEvent(callback: (element: HTMLElement, data: GenTreeNode) => Promise<boolean> | boolean) {
         this.#onCLickEventMethod = callback;
     }
 
@@ -631,8 +669,8 @@ export class genTree <T extends unknown[]>{
      * ある行リックされた時、処理が実行後に呼ばれます
      * @param {function} callback 
      */
-    onClickedEvent(callback:(element:HTMLElement, data: GenTreeNode) =>Promise<boolean> | boolean){
+    onClickedEvent(callback: (element: HTMLElement, data: GenTreeNode) => Promise<boolean> | boolean) {
         this.#onCLickedEventMethod = callback;
     }
-    
+
 }
