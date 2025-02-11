@@ -384,6 +384,8 @@ export class genTree<T extends unknown[]> {
 
         }
 
+        if (index == -1) return;
+
         let workChekedType = 0;
         if ((this.#arrayData[index].type == 'root')) {
             workChekedType = workChekedType + genTree.CHECKED_TYPE_ROOT;
