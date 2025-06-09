@@ -1,7 +1,9 @@
 ﻿import {genTree} from "./build/js/genTree.js";
 
 var data = [
-    {id:1,type:'node', name:'データ1'},
+    {id:1,type:'root', name:'データ1', open: false, child:[
+        {id:"1-1",type:'node', name:'データ1-1'},
+        ]},
     {id:2,type:'node', name:'データ2'},
     {id:3,type:'node', name:'データ3'},
     {id:4,type:'node', name:'データ4'},
@@ -10020,7 +10022,7 @@ var testNode = [
                 name:'子供１'
             },
             {
-                id:2,
+                id:3,
                 type:'node',
                 name:'子供２あいうえおかきくけこたちつてと'
             },
@@ -10038,57 +10040,57 @@ var testNode = [
                 ]
             },
             {
-                id:3,
+                id:6,
                 type:'node',
                 name:'子供1-2'
             },
             {
-                id:2,
+                id:7,
                 type:'node',
                 name:'子供２'
             },
             {
-                id:2,
+                id:8,
                 type:'node',
                 name:'子供２'
             },
             {
-                id:2,
+                id:9,
                 type:'node',
                 name:'子供２'
             },
             {
-                id:2,
+                id:10,
                 type:'node',
                 name:'子供２'
             },
             {
-                id:2,
+                id:11,
                 type:'node',
                 name:'子供２'
             },
             {
-                id:2,
+                id:12,
                 type:'node',
                 name:'子供２'
             },
             {
-                id:2,
+                id:13,
                 type:'node',
                 name:'子供２'
             },
             {
-                id:2,
+                id:14,
                 type:'node',
                 name:'子供２'
             },
             {
-                id:2,
+                id:15,
                 type:'node',
                 name:'子供２'
             },
             {
-                id:2,
+                id:16,
                 type:'node',
                 name:'子供２'
             },
@@ -10096,7 +10098,7 @@ var testNode = [
         ]
     }
 ];
-treeRend.setData(data);
+treeRend.setData(testNode);
 
 treeRend.onClickEvent(function(e,d){
     console.log(d);

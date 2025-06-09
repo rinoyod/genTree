@@ -28,6 +28,7 @@ export class genTree {
     #uid = "";
     #arrayData = [];
     #tmpArrayData = []; //作業用
+    #selectedObj;
     //#rowRender: ((...args: T) => any) | undefined = undefined;
     #rowRender = undefined;
     #onCLickEventMethod = undefined;
@@ -35,6 +36,7 @@ export class genTree {
     #onRenderRowEventMethod = undefined;
     #onRenderEventMethod = undefined;
     #beforeMouseMoveIdx = -1;
+    #autoOpen = true; //自動で展開するかどうか
     constructor(el, option) {
         this.#parentDivElement = el;
         this.#parentDivElement.classList.add('genTree');
@@ -53,6 +55,7 @@ export class genTree {
         layer.classList.add('topLayer');
         this.#parentDivElement.appendChild(layer);
         this.#layer = layer;
+        this.#selectedObj = null;
         //rowrendareカスタムメソッド
         if (option && ("rowRender" in option)) {
             this.#rowRender = option.rowRender;
@@ -76,47 +79,21 @@ export class genTree {
         this.#actualHeigth = this.#resetActualHeight();
         //ユニークなID
         this.#uid = this.#getUniqueStr();
-        this.#layer.addEventListener("click", (e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            const pos = this.#getPointerEvetPosition(e);
-            //今クリックした行数を求める
-            const height = this.#getRowHeight();
-            const index = Math.floor(pos.y / height);
-            if (this.#arrayData.length - 1 < index)
-                return;
-            //ユーザー側のクリックイベントの実行
-            let afrer = (this.#onCLickEventMethod) ? this.#onCLickEventMethod(e.currentTarget, this.#arrayData[index]) : true;
-            if (!afrer)
-                afrer = true;
-            this.setSelected(this.#arrayData[index].id);
-            if (afrer) {
-                //子供を持ってるいる場合は展開・縮小を行う
-                if (this.#arrayData[index].type === 'root') {
-                    this.#arrayData[index].open = !(this.#arrayData[index].open);
-                    this.setData(this.#dataJson);
-                    this.#beforeMouseMoveIdx = -1; //絶対動作させるため値をリセットさせる
-                    this.#classAddHover(index); //カーソルがおかれている行のハイライト
-                }
-            }
-            if (this.#onCLickedEventMethod)
-                this.#onCLickedEventMethod(e.currentTarget, this.#arrayData[index]);
-        });
-        //マウスオーバーイベント
-        this.#layer.addEventListener("mousemove", (e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            const pos = this.#getPointerEvetPosition(e);
-            //カーソルのある行数を求める
-            const height = this.#getRowHeight();
-            const index = Math.floor(pos.y / height);
-            this.#classAddHover(index);
-        });
         //スクロールイベント
         this.#parentDivElement.addEventListener("scroll", (e) => {
             e.preventDefault();
-            this.#scrollRender();
+            requestAnimationFrame(this.#scrollRender.bind(this));
         });
+    }
+    /**
+     * 自動で展開するかどうかを設定します
+     * @property {boolean}
+     */
+    set autoOpen(val) {
+        this.#autoOpen = val;
+    }
+    get autoOpen() {
+        return this.#autoOpen;
     }
     /**
      * フォントサイズを指定します
@@ -151,27 +128,6 @@ export class genTree {
             }
         }
         this.#beforeMouseMoveIdx = index;
-    }
-    /**
-     * clickイベント時などのクリックした座標を求める
-     * @param {PointerEvent} pointerEvent ポインターイベント
-     * @returns {{x:number,y:number}}
-     */
-    #getPointerEvetPosition(pointerEvent) {
-        const clickX = pointerEvent.pageX;
-        const clickY = pointerEvent.pageY;
-        let positionX = 0;
-        let positionY = 0;
-        if (pointerEvent.currentTarget) {
-            const elemnt = pointerEvent.currentTarget;
-            const clientRect = elemnt.getBoundingClientRect();
-            positionX = clientRect.left + window.scrollX;
-            positionY = clientRect.top + window.scrollY;
-        }
-        // 要素内におけるクリック位置を計算
-        const x = clickX - positionX;
-        const y = clickY - positionY;
-        return { x: x, y: y };
     }
     #resetActualHeight() {
         const tesSpan = document.createElement('span');
@@ -223,52 +179,6 @@ export class genTree {
         return new Date().getTime().toString(16) + Math.floor(strong * Math.random()).toString(16);
     }
     /**
-     * スタイルシート既存ルールを追加＆更新を行う
-     * @param {string} keySelecter このセレクターがあるcssシートに更新を行う
-     * @param {string} selector 更新を行うセレクター（なければ追加）
-     * @param {string} updateRule ルール
-     *
-     * @example
-     * #cssRuleUpdate(".another-dynamic-class",
-     *      ".another-dynamic-class",
-     *      "{ background-color: yellow; }"
-     * )
-     */
-    #cssRuleUpdate(keySelecter, selector, updateRule) {
-        const sheets = document.styleSheets;
-        let rules = null;
-        let sheet;
-        for (let i = 0; i < sheets.length; i++) {
-            // keySelecterが持つCSSシートを取得
-            try {
-                rules = sheets[i].cssRules;
-                for (let j = 0; j < rules.length; j++) {
-                    // セレクタが一致するか調べる
-                    if (keySelecter === rules[j].selectorText) {
-                        sheet = rules[j];
-                        break;
-                    }
-                }
-                if (sheet !== undefined)
-                    break;
-            }
-            catch (e) {
-            }
-        }
-        if (sheet !== undefined) {
-            // 特定のルールを探して削除してから再挿入
-            for (let i = 0; i < sheet.cssRules.length; i++) {
-                const rules = sheet.cssRules[i];
-                if (rules.selectorText === selector) {
-                    sheet.deleteRule(i); // 削除
-                    break;
-                }
-            }
-            //ルール追加
-            sheet.insertRule(selector + " " + updateRule, sheet.cssRules.length);
-        }
-    }
-    /**
      * 一行の高さを求めます
      * @returns {number}
      */
@@ -292,6 +202,39 @@ export class genTree {
                 break;
             }
         }
+        if (index == -1)
+            return;
+        let workChekedType = 0;
+        if ((this.#arrayData[index].type == 'root')) {
+            workChekedType = workChekedType + genTree.CHECKED_TYPE_ROOT;
+        }
+        if ((this.#arrayData[index].type == 'node')) {
+            workChekedType = workChekedType + genTree.CHECKED_TYPE_NODE;
+        }
+        if ((workChekedType & this.#checkedType) != workChekedType) {
+            return;
+        }
+        //selectedの処理
+        if (this.#selectedObj != null) {
+            this.#selectedObj['selected'] = false;
+        }
+        for (let i = 0; i < this.#layer.childElementCount; i = (i + 1) | 0) {
+            const idx = (this.#layer.children[i].id.split('_')[1]) | 0;
+            if ('selected' in this.#arrayData[idx]) {
+                delete this.#arrayData[idx].selected;
+                const deleteEl = document.getElementById(this.#uid + "_" + idx);
+                if (deleteEl) {
+                    deleteEl.classList.remove('selected');
+                }
+                break;
+            }
+        }
+        this.#arrayData[index]['selected'] = true;
+        this.#selectedObj = this.#arrayData[index];
+        const selectedEl = document.getElementById(this.#uid + "_" + index);
+        if (selectedEl) {
+            selectedEl.classList.add('selected');
+        }
     }
     /**
      * データを設定します
@@ -300,6 +243,16 @@ export class genTree {
     setData(json) {
         this.#dataJson = json;
         this.update();
+    }
+    /**
+     * 内部のノード配列を編集する
+     * @param callback
+     */
+    editNodeArray(callback) {
+        for (let i = 0; i < this.#arrayData.length; i++) {
+            const json = this.#arrayData[i];
+            callback(json);
+        }
     }
     /**
      * 表示を更新する
@@ -407,10 +360,12 @@ export class genTree {
         if (hideBottomIdx > (this.#arrayData.length - 1)) {
             hideBottomIdx = this.#arrayData.length - 1;
         }
-        return { viewTopIdx: viewTopIdx,
+        return {
+            viewTopIdx: viewTopIdx,
             viewBottomIdx: viewBottomIdx,
             hideTopIdx: hideTopIdx,
-            hideBottomIdx: hideBottomIdx };
+            hideBottomIdx: hideBottomIdx
+        };
     }
     #createRowDiv(rowId) {
         const height = this.#getRowHeight();
@@ -455,8 +410,35 @@ export class genTree {
             }
         }
         if (('iconClass' in data) && data.iconClass) {
-            indent.classList.add(data.iconClass);
+            const words = data.iconClass.split(" ");
+            for (let i = 0; i < words.length; i++) {
+                const word = words[i];
+                indent.classList.add(word);
+            }
         }
+        newDiv.addEventListener('mousemove', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            this.#classAddHover(rowId);
+        });
+        newDiv.addEventListener("click", (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            //ユーザー側のクリックイベントの実行
+            (this.#onCLickEventMethod) ? this.#onCLickEventMethod(e.currentTarget, data) : true;
+            this.setSelected(data.id);
+            if (this.#autoOpen) {
+                //子供を持ってるいる場合は展開・縮小を行う
+                if (data.type === 'root') {
+                    data.open = !(data.open);
+                    this.setData(this.#dataJson);
+                    this.#beforeMouseMoveIdx = -1; //絶対動作させるため値をリセットさせる
+                    this.#classAddHover(rowId); //カーソルがおかれている行のハイライト
+                }
+            }
+            if (this.#onCLickedEventMethod)
+                this.#onCLickedEventMethod(e.currentTarget, data);
+        });
         return newDiv;
     }
     /**
@@ -474,7 +456,7 @@ export class genTree {
         this.#onRenderEventMethod = callback;
     }
     /**
-     * 表示・表示更新タイミングで呼ばれます。
+     * ある行リックされた時、処理が実行前に呼ばれます
      * @param {function} callback
      */
     onClickEvent(callback) {
