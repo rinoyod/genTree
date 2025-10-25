@@ -78,7 +78,7 @@ tree.setData(data);
 
 ---
 
-### 2. getData()
+### ~~2. getData()~~
 現在設定されているデータを取得します。
 
 - **戻り値**: 現在のツリーデータ（配列形式）
@@ -135,7 +135,7 @@ tree.onClickedEvent((element, data) => {
 
 ---
 
-### 6. static path(path)
+### ~~6. static path(path)~~
 リソースのパスを設定します（画像やCSSの参照先）。
 
 - **引数**:  
