@@ -56,25 +56,9 @@ export class genTree {
         this.#parentDivElement.appendChild(layer);
         this.#layer = layer;
         this.#selectedObj = null;
-        //rowrendareカスタムメソッド
-        if (option && ("rowRender" in option)) {
-            this.#rowRender = option.rowRender;
-        }
-        if (option && ("checkedType" in option)) {
-            this.#checkedType = option.checkedType;
-        }
-        if (option && ('resizer' in option) && option.resizer == true) {
-            window.addEventListener('resize', (e) => {
-                e.preventDefault();
-                this.#scrollRender();
-            });
-        }
+        this.options = option ? option : {};
         //jsonデータ
         this.#dataJson = [];
-        //デフォルトフォントサイズ
-        if (option && ("fontSize" in option)) {
-            this.#defaultFontSize = option.fontSize;
-        }
         //実フォントの縦サイズを取得
         this.#actualHeigth = this.#resetActualHeight();
         //ユニークなID
@@ -94,6 +78,35 @@ export class genTree {
     }
     get autoOpen() {
         return this.#autoOpen;
+    }
+    /**
+     * オプションを設定します
+     * @property {genTreeOption}
+     */
+    set options(option) {
+        //rowrendareカスタムメソッド
+        if (option && ("rowRender" in option)) {
+            this.#rowRender = option.rowRender;
+        }
+        if (option && ("checkedType" in option)) {
+            this.#checkedType = option.checkedType;
+        }
+        const resizerFn = (e) => {
+            e.preventDefault();
+            this.#scrollRender();
+        };
+        if (option && ('resizer' in option)) {
+            if (option.resizer === true) {
+                window.addEventListener('resize', resizerFn);
+            }
+            else if (option.resizer === false) {
+                window.removeEventListener('resize', resizerFn);
+            }
+        }
+        //デフォルトフォントサイズ
+        if (option && ("fontSize" in option)) {
+            this.#defaultFontSize = option.fontSize;
+        }
     }
     /**
      * フォントサイズを指定します
@@ -219,7 +232,7 @@ export class genTree {
             this.#selectedObj['selected'] = false;
         }
         for (let i = 0; i < this.#layer.childElementCount; i = (i + 1) | 0) {
-            const idx = (this.#layer.children[i].id.split('_')[1]) | 0;
+            const idx = this.#layer.children[i].id.split('_')[1];
             if ('selected' in this.#arrayData[idx]) {
                 delete this.#arrayData[idx].selected;
                 const deleteEl = document.getElementById(this.#uid + "_" + idx);

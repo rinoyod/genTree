@@ -1,11 +1,3 @@
-
-export type genTreeOption<T extends unknown[]> = {
-    resizer?: boolean,
-    rowRender?: ((data: GenTreeNode) => void),
-    checkedType?: number,
-    fontSize?: number,
-};
-
 export type GenTreeNode = {
     id: string; // ノードの一意な識別子
     name: string; // ノードの名前
@@ -14,6 +6,14 @@ export type GenTreeNode = {
     iconClass?: string; //アイコンを個別に設定したい時等に使う（展開、閉じるアイコンのところに追加される）
     [key: string]: any; // ユーザーが追加するカスタムプロパティを許容
 }
+
+export type genTreeOption<T extends unknown[]> = {
+    resizer?: boolean,
+    rowRender?: ((data: GenTreeNode) => void),
+    checkedType?: number,
+    fontSize?: number,
+};
+
 
 export class genTree<T extends unknown[]> {
 
@@ -88,29 +88,10 @@ export class genTree<T extends unknown[]> {
         this.#selectedObj = null;
 
 
-        //rowrendareカスタムメソッド
-        if (option && ("rowRender" in option)) {
-            this.#rowRender = option.rowRender;
-        }
-
-        if (option && ("checkedType" in option)) {
-            this.#checkedType = <number>option.checkedType;
-        }
-
-        if (option && ('resizer' in option) && option.resizer == true) {
-            window.addEventListener('resize', (e) => {
-                e.preventDefault();
-                this.#scrollRender();
-            });
-        }
+        this.options = option ? option : {};
 
         //jsonデータ
         this.#dataJson = [];
-
-        //デフォルトフォントサイズ
-        if (option && ("fontSize" in option)) {
-            this.#defaultFontSize = <number>option.fontSize;
-        }
 
         //実フォントの縦サイズを取得
         this.#actualHeigth = this.#resetActualHeight();
@@ -137,6 +118,39 @@ export class genTree<T extends unknown[]> {
 
     get autoOpen() {
         return this.#autoOpen;
+    }
+
+    /**
+     * オプションを設定します
+     * @property {genTreeOption}
+     */
+    set options(option: genTreeOption<T>) {
+        //rowrendareカスタムメソッド
+        if (option && ("rowRender" in option)) {
+            this.#rowRender = option.rowRender;
+        }
+
+        if (option && ("checkedType" in option)) {
+            this.#checkedType = option.checkedType as number;
+        }
+
+        const resizerFn = (e: Event) => {
+            e.preventDefault();
+            this.#scrollRender();
+        };
+
+        if (option && ('resizer' in option)) {
+            if( option.resizer === true) {
+                window.addEventListener('resize', resizerFn);
+            }else if( option.resizer === false) {
+                window.removeEventListener('resize', resizerFn);
+            }
+        }
+
+        //デフォルトフォントサイズ
+        if (option && ("fontSize" in option)) {
+            this.#defaultFontSize = option.fontSize as number;
+        }
     }
 
     /**
@@ -227,7 +241,7 @@ export class genTree<T extends unknown[]> {
             const results = [];
             const childNodesLength = elem.childNodes.length;
             for (let i = 0; i < (childNodesLength | 0); i = (i + 1) | 0) {
-                results.push(this.#retrieveCharactersRects(<Element>elem.childNodes[i | 0]));
+                results.push(this.#retrieveCharactersRects(elem.childNodes[i | 0] as Element));
             }
 
             // 結果の配列をフラットにする
@@ -293,7 +307,7 @@ export class genTree<T extends unknown[]> {
         }
 
         for (let i = 0; i < this.#layer.childElementCount; i = (i + 1) | 0) {
-            const idx = <number>(<unknown>(this.#layer.children[i].id.split('_')[1])) | 0;
+            const idx = (this.#layer.children[i].id.split('_')[1] as unknown) as number | 0;
             if ('selected' in this.#arrayData[idx]) {
                 delete this.#arrayData[idx].selected;
                 const deleteEl = document.getElementById(this.#uid + "_" + idx);
@@ -392,7 +406,7 @@ export class genTree<T extends unknown[]> {
             if ((obj.type === "root") &&
                 (obj.open && ("open" in obj)) &&
                 ("child" in obj)) {
-                this.#toArrayData(<GenTreeNode[]>obj["child"], (level + 1) | 0);
+                this.#toArrayData(obj["child"] as GenTreeNode[], (level + 1) | 0);
             }
         }
     }
@@ -488,7 +502,7 @@ export class genTree<T extends unknown[]> {
         newDiv.id = this.#uid + '_' + rowId;
         newDiv.classList.add('row');
 
-        const data = <GenTreeNode>this.#arrayData[rowId];
+        const data = this.#arrayData[rowId] as GenTreeNode;
 
 
         if (!('level' in data)) {
@@ -553,7 +567,7 @@ export class genTree<T extends unknown[]> {
 
 
             //ユーザー側のクリックイベントの実行
-            (this.#onCLickEventMethod) ? this.#onCLickEventMethod(<HTMLElement>e.currentTarget, data) : true;
+            (this.#onCLickEventMethod) ? this.#onCLickEventMethod(e.currentTarget as HTMLElement, data) : true;
 
             this.setSelected(data.id);
 
@@ -567,7 +581,7 @@ export class genTree<T extends unknown[]> {
                 }
             }
 
-            if (this.#onCLickedEventMethod) this.#onCLickedEventMethod(<HTMLElement>e.currentTarget, data)
+            if (this.#onCLickedEventMethod) this.#onCLickedEventMethod(e.currentTarget as HTMLElement, data);
 
         });
 

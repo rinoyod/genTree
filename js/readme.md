@@ -1,7 +1,8 @@
 # genTree リファレンス
 
 ## 概要
-`genTree` は階層データを効率的に描画・操作できる軽量な JavaScript クラスです。以下はその主な特徴です:
+genTree は階層データを効率的に描画・操作できる軽量な JavaScript/TypeScript クラスです。  
+主な特徴は以下の通りです:
 
 - ツリー構造データの描画
 - ユーザー操作（クリック、スクロール、リサイズ）への対応
@@ -10,16 +11,35 @@
 
 ---
 
+## TypeScript 5.5 以降の対応について
+
+TypeScript 5.5 以降では、`erasableSyntaxOnly` や `verbatimModuleSyntax: true` に対応しています。  
+`tsconfig.json` で `verbatimModuleSyntax: true` を指定することで、ESM構文の厳密な扱いが可能です。  
+これにより、`export`/`import` の構文がそのまま出力され、Node.jsやブラウザのESM環境とより高い互換性を持ちます。
+
+```json
+{
+  "compilerOptions": {
+    // ...他の設定...
+    "verbatimModuleSyntax": true
+  }
+}
+```
+
+---
+
 ## クラスの使用方法
 
 ### インスタンス生成
 
 ```javascript
-const tree = new genTree("containerID", options);
+const containerID = document.getElementById("containerID");
+const tree = new genTree(containerID, options);
+
 ```
 
-- **`containerID`**: 描画先のHTML要素のID(Divエレメント)
-- **`options`**: 初期化時のオプション（詳細は後述）
+- **containerID**: 描画先のHTMLElement
+- **options**: 初期化時のオプション（詳細は後述）
 
 ### データ設定
 
@@ -27,19 +47,19 @@ const tree = new genTree("containerID", options);
 tree.setData(jsonData);
 ```
 
-- **`jsonData`**: ツリー構造データ（詳細は[データ構造](#データ構造)を参照）
+- **jsonData**: ツリー構造データ（詳細はデータ構造を参照）
 
 ---
 
 ## メソッド一覧
 
-### 1. `setData(json)`
+### 1. setData(json)
 ツリー構造データを設定し、描画を行います。
 
-- **引数**: 
-  - `json`: 階層データ（配列形式）
-- **例**:
+- **引数**:  
+  - json: 階層データ（配列形式）
 
+**例:**
 ```javascript
 const data = [
     {
@@ -58,12 +78,12 @@ tree.setData(data);
 
 ---
 
-### 2. `getData()`
+### 2. getData()
 現在設定されているデータを取得します。
 
 - **戻り値**: 現在のツリーデータ（配列形式）
-- **例**:
 
+**例:**
 ```javascript
 const currentData = tree.getData();
 console.log(currentData);
@@ -71,28 +91,28 @@ console.log(currentData);
 
 ---
 
-### 3. `setSelected(id)`
+### 3. setSelected(id)
 指定したノードを選択状態にします。
 
-- **引数**: 
-  - `id`: 選択したいノードのID
-- **例**:
+- **引数**:  
+  - id: 選択したいノードのID
 
+**例:**
 ```javascript
 tree.setSelected("1-1");
 ```
 
 ---
 
-### 4. `eClick(callback)`
-ノードがクリックされた際のイベントを設定します。
+### 4. onClickEvent(callback)
+ノードがクリックされた際のイベントを設定します（クリック前）。
 
-- **引数**: 
-  - `callback`: コールバック関数 (引数はクリックされた要素とデータ)
-- **例**:
+- **引数**:  
+  - callback: コールバック関数 (引数はクリックされた要素とデータ)
 
+**例:**
 ```javascript
-tree.eClick((element, data) => {
+tree.onClickEvent((element, data) => {
     console.log("クリックされました:", data);
     return true; // falseを返すと既定の処理を停止
 });
@@ -100,72 +120,68 @@ tree.eClick((element, data) => {
 
 ---
 
-### 5. `eClicked(callback)`
-ノードのクリックイベント後に発火するイベントを設定します。
+### 5. onClickedEvent(callback)
+ノードのクリックイベント後に発火するイベントを設定します（クリック後）。
 
-- **引数**: 
-  - `callback`: コールバック関数 (引数はクリックされた要素とデータ)
-- **例**:
+- **引数**:  
+  - callback: コールバック関数 (引数はクリックされた要素とデータ)
 
+**例:**
 ```javascript
-tree.eClicked((element, data) => {
+tree.onClickedEvent((element, data) => {
     console.log("クリック完了:", data);
 });
 ```
 
 ---
 
-### 6. `static path(path)`
+### 6. static path(path)
 リソースのパスを設定します（画像やCSSの参照先）。
 
-- **引数**:
-  - `path`: リソースの基準パス
-- **例**:
+- **引数**:  
+  - path: リソースの基準パス
 
+**例:**
 ```javascript
-genTree.path("/assets/");
+
 ```
 
 ---
 
-### 7. `update()`
+### 7. update()
 ツリーの表示を再描画します。  
 現在のデータを再利用し、変更された部分を更新します。
 
 - **引数**: なし
 - **戻り値**: なし
-- **例**:
 
+**例:**
 ```javascript
 // データの一部を変更
 const currentData = tree.getData();
 currentData[0].name = "Updated Root Node";
-
 // 再描画
 tree.update();
 ```
-
-**用途**:  
-`getData()` で取得したデータを直接編集後、`update()` を呼び出すことで、ツリー表示を最新状態に反映させることができます。
 
 ---
 
 ## オプション
 
-`genTree` のコンストラクタで渡すオプションです。
+genTree のコンストラクタで渡すオプションです。
 
-| オプション       | 型                 | 説明                                                                             |
-|-------------------|--------------------|----------------------------------------------------------------------------------|
-| `resizer`        | `boolean`          | ウィンドウリサイズ時に再描画するかを指定します。                                   |
-| `rowRender`      | `function`         | 各行をカスタマイズ描画する関数を設定します。                                       |
-| `checkedType`    | `number`           | チェック可能なノードのタイプを設定します。                                         |
-| `fontSize`       | `number`           | ツリー描画のフォントサイズを指定します（デフォルトは 14px）。                     |
-| `rowHeight`      | `number`           | 各行の高さ（ピクセル単位）を指定します（デフォルトは 20px）。                     |
+| オプション    | 型        | 説明                                                                 |
+|---------------|-----------|----------------------------------------------------------------------|
+| resizer       | boolean   | ウィンドウリサイズ時に再描画するかを指定します。                      |
+| rowRender     | function(data)  | 各行をカスタマイズ描画する関数を設定します。 <br>引数には１行分のオブジェクトデータが渡されます                         |
+| checkedType   | number    | チェック可能なノードのタイプを設定します。                            |
+| fontSize      | number    | ツリー描画のフォントサイズを指定します（デフォルトは 14px）。         |
+| rowHeight     | number    | 各行の高さ（ピクセル単位）を指定します（デフォルトは 20px）。         |
 
-- **例**:
-
+**例:**
 ```javascript
-const tree = new genTree("container", {
+const containerID = document.getElementById("containerID");
+const tree = new genTree("containerID", {
     resizer: true,
     rowRender: (data) => {
         const div = document.createElement("div");
@@ -173,6 +189,7 @@ const tree = new genTree("container", {
         return div;
     },
     checkedType: genTree.CHECKED_TYPE_NODE,
+    fontSize: 16,
 });
 ```
 
@@ -196,7 +213,7 @@ const tree = new genTree("container", {
                 "id": "1-1",
                 "name": "Child Node",
                 "type": "node",
-                "date": "2022/03/02", // ライブラリが使わないプロパティ名は自由に使用できる
+                "date": "2022/03/02" // ライブラリが使わないプロパティ名は自由に使用できる
             }
         ]
     }
@@ -205,34 +222,38 @@ const tree = new genTree("container", {
 
 ### プロパティ
 
-| プロパティ名 | 必須 | 型       | 説明                          |
-|--------------|------|----------|-------------------------------|
-| `id`?         | Yes  | `string` | ノードの一意な識別子          |
-| `name`        | Yes  | `string` | ツリーに表示される名前                      |
-| `type`        | Yes  | `string` | ノードのタイプ 'root' or 'node' rootはサブツリーがある場合、ない場合はnodeを指定 |
-| `open`        | No   | `boolean`| ノードを展開するかどうか。typeが'root'の場合必要。trueの場合はサブツリーが展開されて表示される      |
-| `iconClass`   | No   | `string` | アイコンの部分に独自のクラス名を付与します（これを使い各ノードのアイコンを変更できます）|
-| `child`       | No   | `array`  | 子ノードの配列                |
-| `selected`(readOnly)    | No   |`boolean` |  ライブラリ側が付与。該当箇所が選択された場合追加される  |
-| `level`(readOnly)      | No   | `number`  | 階層レベル（自動設定されます） |
+| プロパティ名         | 必須 | 型       | 説明                                               |
+|----------------------|------|----------|----------------------------------------------------|
+| id                   | Yes  | string   | ノードの一意な識別子                               |
+| name                 | Yes  | string   | ツリーに表示される名前                             |
+| type                 | Yes  | string   | ノードのタイプ 'root' or 'node'                    |
+| open                 | No   | boolean  | ノードを展開するかどうか（typeが'root'の場合のみ）  |
+| iconClass            | No   | string   | アイコン部分に独自のクラス名を付与                 |
+| child                | No   | array    | 子ノードの配列                                     |
+| selected (readOnly)  | No   | boolean  | ライブラリ側が付与。該当箇所が選択された場合追加   |
+| level (readOnly)     | No   | number   | 階層レベル（自動設定されます）                     |
 
-
- 
-
-他、上記のプロパティ名以外にユーザーが独自のプロパティ名でデータを組み込めます
+他、上記以外のプロパティも自由に追加可能です。
 
 ---
 
 ## サンプルコード
 
-html
+### html
+
 ```html
+<link rel="stylesheet" href="css/genTree.css" />
+ .
+ .
+ .
 <!-- 幅、高さを指定したdivを用意-->
 <div id="treeContainer" style="left:10px; width: 350px; height: 200px;  border-style: solid; border-width: 1px;"></div>
 ```
-JavaScript
+
+### JavaScript
+
 ```javascript
-genTree.path("/static/");
+
 
 const data = [
     {
@@ -247,7 +268,9 @@ const data = [
     }
 ];
 
-const tree = new genTree("treeContainer", {
+const treeContainer = document.getElementById('treeContainer');
+
+const tree = new genTree(treeContainer, {
     resizer: true,
     rowRender: (data) => {
         const div = document.createElement("div");
@@ -255,16 +278,26 @@ const tree = new genTree("treeContainer", {
         return div;
     },
     checkedType: genTree.CHECKED_TYPE_NODE,
+    fontSize: 16,
 });
 
 tree.setData(data);
 
-tree.eClick((element, data) => {
+tree.onClickEvent((element, data) => {
     console.log("Node clicked:", data);
     return true;
 });
 
-tree.eClicked((element, data) => {
+tree.onClickedEvent((element, data) => {
     console.log("After click:", data);
 });
 ```
+
+---
+
+## 注意
+
+- TypeScript 5.5 以降では `erasableSyntaxOnly` や `verbatimModuleSyntax: true` に対応しています。
+- コンストラクタの第1引数は「HTMLElement」を直接渡してください。
+- イベント名やAPI名は `onClickEvent` などキャメルケースです（`eClick` ではありません）。
+- `getData()` メソッドは現状未実装の場合があります。データ取得は内部状態を直接参照してください。
