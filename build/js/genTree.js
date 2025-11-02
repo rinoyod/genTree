@@ -126,6 +126,84 @@ export class genTree {
     set rowHeight(val) {
         this.#defaultRowHeigt = val;
     }
+    /**
+     *
+     * @param elementId 画面で表示されているリストのID
+     * @param newData
+     * @returns
+     */
+    setDataRow(elementId, newData) {
+        const id = newData.id;
+        const oldJsonDataNode = genTree.#findJsonDataNodeById(id, this.#dataJson);
+        if (oldJsonDataNode) {
+            // oldJsonDataNode の参照（アドレス）はそのまま、中身だけを newData で上書き
+            Object.keys(oldJsonDataNode).forEach(key => {
+                // 既存プロパティを削除
+                delete oldJsonDataNode[key];
+            });
+            Object.keys(newData).forEach(key => {
+                // newData の内容をコピー
+                oldJsonDataNode[key] = newData[key];
+            });
+        }
+        const index = this.#arrayData.findIndex(item => item.id === id);
+        if (index !== -1) {
+            const oldArrayData = this.#arrayData[index];
+            // oldArrayData の参照（アドレス）はそのまま、中身だけを newData で上書き
+            Object.keys(oldArrayData).forEach(key => {
+                // 既存プロパティを削除
+                delete oldArrayData[key];
+            });
+            Object.keys(newData).forEach(key => {
+                // newData の内容をコピー
+                oldArrayData[key] = newData[key];
+            });
+            // 再描画（その行だけ更新するように最適化も可能）
+            const oldDiv = document.getElementById(elementId);
+            if (oldDiv && oldDiv.parentNode) {
+                //rowRenderが設定されている場合のみ更新処理を行う
+                if (this.#rowRender === undefined)
+                    return;
+                const newDiv = this.#rowRender(oldArrayData);
+                oldDiv.parentNode.replaceChild(newDiv, oldDiv);
+            }
+        }
+    }
+    /**
+     * #this.dataJsonからIDでノードを検索して返す(アドレス保持)
+     * @param nodes
+     * @param id
+     * @returns
+     */
+    static #findJsonDataNodeById(id, nodes) {
+        for (const node of nodes) {
+            if (node.id === id)
+                return node;
+            if (node.child) {
+                const found = this.#findJsonDataNodeById(id, node.child);
+                if (found)
+                    return found;
+            }
+        }
+        return null;
+    }
+    /**
+     * IDでデータを検索して返す(コピーを返す)
+     * @param id
+     * @returns
+     */
+    findDataById(id) {
+        const refRowData = genTree.#findJsonDataNodeById(id, this.#dataJson);
+        if (refRowData) {
+            const copyRowData = { ...refRowData };
+            return copyRowData;
+            // // キーと値の両方を取得してループ
+            // Object.entries(refRowData).forEach(([key, fileHandle]) => {
+            // // key: キー
+            // // fileHandle: 値            });
+        }
+        return null;
+    }
     //前回セットした位置を覚えせてまた同じ位置だったら無駄な処理をさせない様にする
     //マウスが移動したときにその行に'hover'を追加する　
     #classAddHover(index) {

@@ -165,7 +165,58 @@ tree.update();
 ```
 
 ---
+etData()
+現在設定されているツリーデータ（配列形式）を取得します。
+データの内容を確認したり、外部で加工したい場合に利用します。
 
+戻り値:
+現在のツリーデータ（配列形式）  
+
+例:
+```javascript
+const currentData = tree.getData();
+console.log(currentData);
+```
+### setDataRow
+指定したノードIDのデータを部分更新します。更新後は必要な範囲のみ再描画されます。
+
+- シグネチャ
+  - setDataRow(id: string, patch: Partial<GenTreeNode>): boolean
+- 引数
+  - id: 更新対象ノードのID
+  - patch: 上書きしたいプロパティのみを含む部分オブジェクト
+- 戻り値
+  - boolean: 更新に成功した場合は true、見つからない場合は false
+- 備考
+  - 大量更新時は複数回の呼び出しより、一括で setData を使う方が高速です
+
+使用例:
+```ts
+const ok = tree.setDataRow('1-2', { name: '名称を更新', open: true });
+if (!ok) console.warn('ノードが見つかりませんでした');
+```
+
+---
+
+### findDataById
+ツリー全体から指定IDのノードを検索して返します。
+
+- シグネチャ
+  - findDataById(id: string): GenTreeNode | null
+- 引数
+  - id: 検索対象ノードのID
+- 戻り値
+  - 該当ノード（見つからない場合は null）
+
+使用例:
+```ts
+const node = tree.findDataById('1-2');
+if (node) {
+  console.log('見つかったノード:', node);
+} else {
+  console.log('該当IDは存在しません');
+}
+```
 ## オプション
 
 genTree のコンストラクタで渡すオプションです。
