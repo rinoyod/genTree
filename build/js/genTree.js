@@ -107,6 +107,10 @@ export class genTree {
         if (option && ("fontSize" in option)) {
             this.#defaultFontSize = option.fontSize;
         }
+        //デフォルト1行の高さ
+        if (option && ("rowHeight" in option)) {
+            this.#defaultRowHeigt = option.rowHeight;
+        }
     }
     /**
      * フォントサイズを指定します
@@ -125,6 +129,14 @@ export class genTree {
      */
     set rowHeight(val) {
         this.#defaultRowHeigt = val;
+    }
+    /**
+     * インデントを設定します
+     * @param val
+     */
+    set indent(val) {
+        this.#indent = val;
+        this.update();
     }
     /**
      *
