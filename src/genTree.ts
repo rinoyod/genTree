@@ -15,6 +15,8 @@ export type genTreeOption<T extends unknown[]> = {
     rowRender?: ((data: GenTreeNode) => void),
     checkedType?: number,
     fontSize?: number,
+    rowHeight?: number,
+    indent?: number,
 };
 
 
@@ -154,6 +156,11 @@ export class genTree<T extends unknown[]> {
         if (option && ("fontSize" in option)) {
             this.#defaultFontSize = option.fontSize as number;
         }
+
+        //デフォルト1行の高さ
+        if (option && ("rowHeight" in option)) {
+            this.#defaultRowHeigt = option.rowHeight as number;
+        }
     }
 
 
@@ -175,6 +182,15 @@ export class genTree<T extends unknown[]> {
      */
     set rowHeight(val: number) {
         this.#defaultRowHeigt = val;
+    }
+
+    /**
+     * インデントを設定します
+     * @param val
+     */
+    set indent(val: number) {
+        this.#indent = val;
+        this.update();
     }
 
     /**
