@@ -352,3 +352,125 @@ tree.onClickedEvent((element, data) => {
 - コンストラクタの第1引数は「HTMLElement」を直接渡してください。
 - イベント名やAPI名は `onClickEvent` などキャメルケースです（`eClick` ではありません）。
 - `getData()` メソッドは現状未実装の場合があります。データ取得は内部状態を直接参照してください。
+
+---
+
+## 追加メソッドの説明
+
+### setDataRow
+
+指定したノードIDのデータを部分更新します。更新後は必要な範囲のみ再描画されます。
+
+- **シグネチャ**  
+  `setDataRow(elementId: string, newData: GenTreeNode): void`
+- **引数**  
+  - `elementId`: 画面で表示されているリストのID（例: `"tree_1"`）
+  - `newData`: 上書きしたいプロパティを含むノードデータ
+- **備考**  
+  - 大量更新時は複数回の呼び出しより、一括で `setData` を使う方が高速です
+
+**使用例:**
+```javascript
+tree.setDataRow('tree_1', { id: '1', name: '新しい名前', open: true });
+```
+
+---
+
+### findDataById
+
+ツリー全体から指定IDのノードを検索して返します（深さ優先）。
+
+- **シグネチャ**  
+  `findDataById(id: string): GenTreeNode | null`
+- **引数**  
+  - `id`: 検索対象ノードのID
+- **戻り値**  
+  - 該当ノード（見つからない場合は null）
+
+**使用例:**
+```javascript
+const node = tree.findDataById('1-2');
+if (node) {
+  console.log('見つかったノード:', node);
+} else {
+  console.log('該当IDは存在しません');
+}
+```
+
+---
+
+### findNodes
+
+任意の条件でノード配列を取得します（全階層をフラットで返す）。
+
+- **シグネチャ**  
+  `findNodes(predicate: (node: GenTreeNode) => boolean): GenTreeNode[]`
+- **引数**  
+  - `predicate`: 条件関数（GenTreeNode => boolean）
+- **戻り値**  
+  - 条件に一致したノード配列
+
+**使用例:**
+```javascript
+// idで検索
+const nodes = tree.findNodes(n => n.id === "abc");
+
+// typeで検索
+const roots = tree.findNodes(n => n.type === "root");
+
+// nameに"ファイル"を含むノード
+const files = tree.findNodes(n => n.name.includes("ファイル"));
+```
+
+---
+
+### editNodeArray
+
+内部のノード配列を直接編集できます。  
+コールバック関数で各ノードに対して任意の処理を実行します。
+
+- **シグネチャ**  
+  `editNodeArray(callback: (json: GenTreeNode) => void): void`
+- **引数**  
+  - `callback`: 各ノードに対して実行する関数
+
+**使用例:**
+```javascript
+tree.editNodeArray(node => {
+  if (node.type === "node") node.name += " (編集済)";
+});
+```
+
+---
+
+### autoOpen（getter/setter）
+
+ノードクリック時に自動で展開・縮小するかどうかを設定できます。
+
+- **getter/setter**  
+  - `tree.autoOpen = false;` // 自動展開を無効化
+  - `const flag = tree.autoOpen;` // 現在の状態取得
+
+---
+
+### onRenderRowEvent
+
+1行作成（表示）されるタイミングで呼ばれます。
+
+- **シグネチャ**  
+  `onRenderRowEvent(callback: (data: GenTreeNode) => void): void`
+- **引数**  
+  - `callback`: 行ごとのカスタム処理
+
+---
+
+### onRenderEvent
+
+表示・表示更新タイミングで呼ばれます。
+
+- **シグネチャ**  
+  `onRenderEvent(callback: (datas: GenTreeNode[]) => void): void`
+- **引数**  
+  - `callback`: 表示中のデータ配列
+
+---

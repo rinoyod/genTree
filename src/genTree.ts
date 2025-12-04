@@ -278,6 +278,42 @@ export class genTree<T extends unknown[]> {
         return null;
     }
 
+    /**
+     * #dataJsonから任意の条件でノード配列を取得する
+     * @param predicate 条件関数 (GenTreeNode => boolean)
+     * @returns GenTreeNode[] 条件に一致したノード配列（全階層をフラットで返す）
+     * @example
+     * // idで検索
+     * const nodes = tree.findNodes(n => n.id === "abc");
+     * 
+     * // typeで検索
+     * const roots = tree.findNodes(n => n.type === "root");
+     * 
+     * // nameに"ファイル"を含むノード
+     * const files = tree.findNodes(n => n.name.includes("ファイル"));
+     * 
+     * // カスタムプロパティで検索
+     * const custom = tree.findNodes(n => n.myProp === true);
+     *
+     * // 複数条件
+     * const filtered = tree.findNodes(n => n.type === "node" && n.name.startsWith("A"));
+     */
+    findNodes(predicate: (node: GenTreeNode) => boolean): GenTreeNode[] {
+        const result: GenTreeNode[] = [];
+        function traverse(nodes: GenTreeNode[]) {
+            for (const node of nodes) {
+                if (predicate(node)) result.push(node);
+                if (node.child && Array.isArray(node.child)) {
+                    traverse(node.child);
+                }
+            }
+        }
+        traverse(this.#dataJson);
+        return result;
+    }
+
+
+
     //前回セットした位置を覚えせてまた同じ位置だったら無駄な処理をさせない様にする
     //マウスが移動したときにその行に'hover'を追加する　
     #classAddHover(index: number) {
@@ -523,7 +559,7 @@ export class genTree<T extends unknown[]> {
         this.#scrollRender();
     }
 
-    #scrollRender() {
+#scrollRender() {
 
         const renderInfo = this.#getViewRenderInfo();
 
